@@ -1,16 +1,10 @@
 using System;
 using System.IO;
 using System.Text.Json;
+using MangaAssistant.Core.Services;
 
 namespace MangaAssistant.Infrastructure.Services
 {
-    public interface ISettingsService
-    {
-        string LibraryPath { get; set; }
-        void SaveSettings();
-        void LoadSettings();
-    }
-
     public class SettingsService : ISettingsService
     {
         private const string SettingsFileName = "settings.json";

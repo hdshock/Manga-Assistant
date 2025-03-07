@@ -8,7 +8,7 @@ namespace MangaAssistant.WPF.ViewModels
     public class ViewModelLocator
     {
         private static ISettingsService? _settingsService;
-        private static Infrastructure.Services.ILibraryService? _libraryService;
+        private static ILibraryService? _libraryService;
         private static IMetadataService? _metadataService;
         private static LibraryScanner? _libraryScanner;
         private static MainViewModel? _mainViewModel;

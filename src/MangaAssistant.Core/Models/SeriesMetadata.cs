@@ -77,5 +77,23 @@ namespace MangaAssistant.Core.Models
 
         [JsonPropertyName("publicationStatus")]
         public string PublicationStatus { get; set; } = string.Empty;
+
+        [JsonPropertyName("description")]
+        public string Description { get; set; } = string.Empty;
+
+        [JsonPropertyName("author")]
+        public string Author { get; set; } = string.Empty;
+
+        [JsonPropertyName("artist")]
+        public string Artist { get; set; } = string.Empty;
+
+        [JsonPropertyName("genre")]
+        public string Genre { get; set; } = string.Empty;
+
+        [JsonPropertyName("year")]
+        public int Year { get; set; }
+
+        [JsonPropertyName("rating")]
+        public double Rating { get; set; }
     }
 } 

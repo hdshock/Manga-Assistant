@@ -19,10 +19,18 @@ public partial class App : System.Windows.Application
         // Initialize ViewModelLocator
         ViewModelLocator.Initialize();
 
-        // Initial library scan
-        _ = Task.Run(async () =>
+        // Start initial library scan in the background
+        Task.Run(async () =>
         {
-            await ViewModelLocator.MainViewModel.InitializeAsync();
+            try
+            {
+                await ViewModelLocator.MainViewModel.InitializeAsync();
+            }
+            catch (Exception ex)
+            {
+                // Log error but don't show message box since we're in a background thread
+                System.Diagnostics.Debug.WriteLine($"Error during initial library scan: {ex.Message}");
+            }
         });
     }
 

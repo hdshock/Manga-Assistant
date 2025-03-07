@@ -45,7 +45,7 @@ public partial class MainWindow : Window
         SettingsContainer.Children.Add(_settingsPage);
 
         // Initialize series page
-        _seriesPage = new SeriesPage(ViewModelLocator.MetadataService);
+        _seriesPage = new SeriesPage(ViewModelLocator.MetadataService, ViewModelLocator.MainViewModel.LibraryService);
         SeriesDetailContainer.Children.Add(_seriesPage);
         _seriesPage.HorizontalAlignment = HorizontalAlignment.Stretch;
         _seriesPage.VerticalAlignment = VerticalAlignment.Stretch;
@@ -65,6 +65,7 @@ public partial class MainWindow : Window
 
     private void LibraryView_Click(object sender, RoutedEventArgs e)
     {
+        // Just switch visibility without affecting the data
         LibraryView.Visibility = Visibility.Visible;
         SeriesDetailContainer.Visibility = Visibility.Collapsed;
         SettingsContainer.Visibility = Visibility.Collapsed;

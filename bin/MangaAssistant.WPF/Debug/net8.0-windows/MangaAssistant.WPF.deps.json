@@ -10,7 +10,8 @@
         "dependencies": {
           "MangaAssistant.Core": "1.0.0",
           "MangaAssistant.Infrastructure": "1.0.0",
-          "MangaAssistant.WPF.Controls": "1.0.0"
+          "MangaAssistant.WPF.Controls": "1.0.0",
+          "Ookii.Dialogs.Wpf": "5.0.1"
         },
         "runtime": {
           "MangaAssistant.WPF.dll": {}

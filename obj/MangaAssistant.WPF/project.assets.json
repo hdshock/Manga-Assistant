@@ -112,7 +112,8 @@
     "net8.0-windows7.0": [
       "MangaAssistant.Core >= 1.0.0",
       "MangaAssistant.Infrastructure >= 1.0.0",
-      "MangaAssistant.WPF.Controls >= 1.0.0"
+      "MangaAssistant.WPF.Controls >= 1.0.0",
+      "Ookii.Dialogs.Wpf >= 5.0.1"
     ]
   },
   "packageFolders": {
@@ -174,6 +175,12 @@
     "frameworks": {
       "net8.0-windows7.0": {
         "targetAlias": "net8.0-windows",
+        "dependencies": {
+          "Ookii.Dialogs.Wpf": {
+            "target": "Package",
+            "version": "[5.0.1, )"
+          }
+        },
         "imports": [
           "net461",
           "net462",

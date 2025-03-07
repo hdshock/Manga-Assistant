@@ -52,10 +52,18 @@ namespace MangaAssistant.WPF
             Directory.CreateDirectory(assetsPath);
             var placeholderPath = Path.Combine(assetsPath, "placeholder-cover.jpg");
 
+            // Ensure the directory exists
+            Directory.CreateDirectory(Path.GetDirectoryName(placeholderPath)!);
+
+            // Save the image
             using (var stream = File.Create(placeholderPath))
             {
                 encoder.Save(stream);
             }
+
+            // Also save a copy in the application directory
+            var appPlaceholderPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "placeholder-cover.jpg");
+            File.Copy(placeholderPath, appPlaceholderPath, true);
         }
     }
 } 

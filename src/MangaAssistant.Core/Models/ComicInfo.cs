@@ -1,3 +1,4 @@
+using System;
 using System.Xml.Serialization;
 
 namespace MangaAssistant.Core.Models
@@ -20,6 +21,15 @@ namespace MangaAssistant.Core.Models
         [XmlElement("Summary")]
         public string? Summary { get; set; }
 
+        [XmlElement("Notes")]
+        public string? Notes { get; set; }
+
+        [XmlElement("Year")]
+        public int? Year { get; set; }
+
+        [XmlElement("Month")]
+        public int? Month { get; set; }
+
         [XmlElement("Writer")]
         public string? Writer { get; set; }
 
@@ -32,13 +42,22 @@ namespace MangaAssistant.Core.Models
         [XmlElement("PageCount")]
         public int PageCount { get; set; }
 
+        [XmlElement("Count")]
+        public string? Count { get; set; }
+
         [XmlElement("Manga")]
         public string? Manga { get; set; }
 
-        [XmlElement("Language")]
-        public string? Language { get; set; }
+        [XmlElement("Characters")]
+        public string? Characters { get; set; }
 
-        [XmlElement("Count")]
-        public string? Count { get; set; }
+        [XmlElement("Teams")]
+        public string? Teams { get; set; }
+
+        [XmlElement("Locations")]
+        public string? Locations { get; set; }
+
+        [XmlElement("CommunityRating")]
+        public float? CommunityRating { get; set; }
     }
 } 

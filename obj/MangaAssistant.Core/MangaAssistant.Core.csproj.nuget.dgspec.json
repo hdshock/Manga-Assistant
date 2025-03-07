@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Programming\\Manga Assistant 3\\src\\MangaAssistant.Core\\MangaAssistant.Core.csproj": {}
+    "C:\\Users\\jason.mesisco\\Documents\\GitHub\\Manga-Assistant\\src\\MangaAssistant.Core\\MangaAssistant.Core.csproj": {}
   },
   "projects": {
-    "C:\\Programming\\Manga Assistant 3\\src\\MangaAssistant.Core\\MangaAssistant.Core.csproj": {
+    "C:\\Users\\jason.mesisco\\Documents\\GitHub\\Manga-Assistant\\src\\MangaAssistant.Core\\MangaAssistant.Core.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Programming\\Manga Assistant 3\\src\\MangaAssistant.Core\\MangaAssistant.Core.csproj",
+        "projectUniqueName": "C:\\Users\\jason.mesisco\\Documents\\GitHub\\Manga-Assistant\\src\\MangaAssistant.Core\\MangaAssistant.Core.csproj",
         "projectName": "MangaAssistant.Core",
-        "projectPath": "C:\\Programming\\Manga Assistant 3\\src\\MangaAssistant.Core\\MangaAssistant.Core.csproj",
+        "projectPath": "C:\\Users\\jason.mesisco\\Documents\\GitHub\\Manga-Assistant\\src\\MangaAssistant.Core\\MangaAssistant.Core.csproj",
         "packagesPath": "C:\\Users\\jason.mesisco\\.nuget\\packages\\",
-        "outputPath": "C:\\Programming\\Manga Assistant 3\\obj\\MangaAssistant.Core\\",
+        "outputPath": "C:\\Users\\jason.mesisco\\Documents\\GitHub\\Manga-Assistant\\obj\\MangaAssistant.Core\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"

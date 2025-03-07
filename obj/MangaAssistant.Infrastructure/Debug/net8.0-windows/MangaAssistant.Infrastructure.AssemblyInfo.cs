@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("MangaAssistant.Infrastructure")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+b4a4e6c4eed1940b165dc5bb6e3ece833a3c28ea")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+7b0ba3f1abfa53e3c561d388bc00b9f9bc35d1b9")]
 [assembly: System.Reflection.AssemblyProductAttribute("MangaAssistant.Infrastructure")]
 [assembly: System.Reflection.AssemblyTitleAttribute("MangaAssistant.Infrastructure")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

@@ -4,17 +4,17 @@
 library
 C#
 .cs
-C:\Programming\Manga Assistant 3\obj\MangaAssistant.WPF.Controls\Release\net8.0-windows\
+C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\obj\MangaAssistant.WPF.Controls\Release\net8.0-windows\
 MangaAssistant.WPF.Controls
 none
 false
 TRACE;RELEASE;NET;NET8_0;NETCOREAPP
 
-3277973545
+4-1543968837
 
-6-1342077947
-210-1276016859
-MangaCard.xaml;SeriesPage.xaml;SettingsPage.xaml;
+10-508409635
+200-552916432
+MangaCard.xaml;MetadataSearchDialog.xaml;SeriesPage.xaml;SettingsPage.xaml;
 
 True
 

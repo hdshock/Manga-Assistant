@@ -24,3 +24,29 @@ C:\Programming\Manga Assistant 3\obj\MangaAssistant.WPF.Controls\Debug\net8.0-wi
 C:\Programming\Manga Assistant 3\obj\MangaAssistant.WPF.Controls\Debug\net8.0-windows\refint\MangaAssistant.WPF.Controls.dll
 C:\Programming\Manga Assistant 3\obj\MangaAssistant.WPF.Controls\Debug\net8.0-windows\MangaAssistant.WPF.Controls.pdb
 C:\Programming\Manga Assistant 3\obj\MangaAssistant.WPF.Controls\Debug\net8.0-windows\ref\MangaAssistant.WPF.Controls.dll
+C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\bin\MangaAssistant.WPF.Controls\Debug\net8.0-windows\MangaAssistant.WPF.Controls.deps.json
+C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\bin\MangaAssistant.WPF.Controls\Debug\net8.0-windows\MangaAssistant.WPF.Controls.dll
+C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\bin\MangaAssistant.WPF.Controls\Debug\net8.0-windows\MangaAssistant.WPF.Controls.pdb
+C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\obj\MangaAssistant.WPF.Controls\Debug\net8.0-windows\MangaAssistant.WPF.Controls.csproj.AssemblyReference.cache
+C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\obj\MangaAssistant.WPF.Controls\Debug\net8.0-windows\MangaCard.baml
+C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\obj\MangaAssistant.WPF.Controls\Debug\net8.0-windows\MetadataSearchDialog.baml
+C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\obj\MangaAssistant.WPF.Controls\Debug\net8.0-windows\MangaCard.g.cs
+C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\obj\MangaAssistant.WPF.Controls\Debug\net8.0-windows\MetadataSearchDialog.g.cs
+C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\obj\MangaAssistant.WPF.Controls\Debug\net8.0-windows\SeriesPage.g.cs
+C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\obj\MangaAssistant.WPF.Controls\Debug\net8.0-windows\SettingsPage.g.cs
+C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\obj\MangaAssistant.WPF.Controls\Debug\net8.0-windows\GeneratedInternalTypeHelper.g.cs
+C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\obj\MangaAssistant.WPF.Controls\Debug\net8.0-windows\MangaAssistant.WPF.Controls_MarkupCompile.cache
+C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\obj\MangaAssistant.WPF.Controls\Debug\net8.0-windows\MangaAssistant.WPF.Controls_MarkupCompile.lref
+C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\obj\MangaAssistant.WPF.Controls\Debug\net8.0-windows\SeriesPage.baml
+C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\obj\MangaAssistant.WPF.Controls\Debug\net8.0-windows\SettingsPage.baml
+C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\obj\MangaAssistant.WPF.Controls\Debug\net8.0-windows\MangaAssistant.WPF.Controls.g.resources
+C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\obj\MangaAssistant.WPF.Controls\Debug\net8.0-windows\MangaAssistant.WPF.Controls.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\obj\MangaAssistant.WPF.Controls\Debug\net8.0-windows\MangaAssistant.WPF.Controls.AssemblyInfoInputs.cache
+C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\obj\MangaAssistant.WPF.Controls\Debug\net8.0-windows\MangaAssistant.WPF.Controls.AssemblyInfo.cs
+C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\obj\MangaAssistant.WPF.Controls\Debug\net8.0-windows\MangaAssistant.WPF.Controls.csproj.CoreCompileInputs.cache
+C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\obj\MangaAssistant.WPF.Controls\Debug\net8.0-windows\MangaAssistant.WPF.Controls.sourcelink.json
+C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\obj\MangaAssistant.WPF.Controls\Debug\net8.0-windows\MangaAss.F0F7C358.Up2Date
+C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\obj\MangaAssistant.WPF.Controls\Debug\net8.0-windows\MangaAssistant.WPF.Controls.dll
+C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\obj\MangaAssistant.WPF.Controls\Debug\net8.0-windows\refint\MangaAssistant.WPF.Controls.dll
+C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\obj\MangaAssistant.WPF.Controls\Debug\net8.0-windows\MangaAssistant.WPF.Controls.pdb
+C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\obj\MangaAssistant.WPF.Controls\Debug\net8.0-windows\ref\MangaAssistant.WPF.Controls.dll

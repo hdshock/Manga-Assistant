@@ -10,3 +10,15 @@ C:\Programming\Manga Assistant 3\obj\MangaAssistant.Core\Debug\net8.0-windows\Ma
 C:\Programming\Manga Assistant 3\obj\MangaAssistant.Core\Debug\net8.0-windows\refint\MangaAssistant.Core.dll
 C:\Programming\Manga Assistant 3\obj\MangaAssistant.Core\Debug\net8.0-windows\MangaAssistant.Core.pdb
 C:\Programming\Manga Assistant 3\obj\MangaAssistant.Core\Debug\net8.0-windows\ref\MangaAssistant.Core.dll
+C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\bin\MangaAssistant.Core\Debug\net8.0-windows\MangaAssistant.Core.deps.json
+C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\bin\MangaAssistant.Core\Debug\net8.0-windows\MangaAssistant.Core.dll
+C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\bin\MangaAssistant.Core\Debug\net8.0-windows\MangaAssistant.Core.pdb
+C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\obj\MangaAssistant.Core\Debug\net8.0-windows\MangaAssistant.Core.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\obj\MangaAssistant.Core\Debug\net8.0-windows\MangaAssistant.Core.AssemblyInfoInputs.cache
+C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\obj\MangaAssistant.Core\Debug\net8.0-windows\MangaAssistant.Core.AssemblyInfo.cs
+C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\obj\MangaAssistant.Core\Debug\net8.0-windows\MangaAssistant.Core.csproj.CoreCompileInputs.cache
+C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\obj\MangaAssistant.Core\Debug\net8.0-windows\MangaAssistant.Core.sourcelink.json
+C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\obj\MangaAssistant.Core\Debug\net8.0-windows\MangaAssistant.Core.dll
+C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\obj\MangaAssistant.Core\Debug\net8.0-windows\refint\MangaAssistant.Core.dll
+C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\obj\MangaAssistant.Core\Debug\net8.0-windows\MangaAssistant.Core.pdb
+C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\obj\MangaAssistant.Core\Debug\net8.0-windows\ref\MangaAssistant.Core.dll

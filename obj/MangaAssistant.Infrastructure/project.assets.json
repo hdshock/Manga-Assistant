@@ -36,11 +36,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Programming\\Manga Assistant 3\\src\\MangaAssistant.Infrastructure\\MangaAssistant.Infrastructure.csproj",
+      "projectUniqueName": "C:\\Users\\jason.mesisco\\Documents\\GitHub\\Manga-Assistant\\src\\MangaAssistant.Infrastructure\\MangaAssistant.Infrastructure.csproj",
       "projectName": "MangaAssistant.Infrastructure",
-      "projectPath": "C:\\Programming\\Manga Assistant 3\\src\\MangaAssistant.Infrastructure\\MangaAssistant.Infrastructure.csproj",
+      "projectPath": "C:\\Users\\jason.mesisco\\Documents\\GitHub\\Manga-Assistant\\src\\MangaAssistant.Infrastructure\\MangaAssistant.Infrastructure.csproj",
       "packagesPath": "C:\\Users\\jason.mesisco\\.nuget\\packages\\",
-      "outputPath": "C:\\Programming\\Manga Assistant 3\\obj\\MangaAssistant.Infrastructure\\",
+      "outputPath": "C:\\Users\\jason.mesisco\\Documents\\GitHub\\Manga-Assistant\\obj\\MangaAssistant.Infrastructure\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -61,8 +61,8 @@
         "net8.0-windows7.0": {
           "targetAlias": "net8.0-windows",
           "projectReferences": {
-            "C:\\Programming\\Manga Assistant 3\\src\\MangaAssistant.Core\\MangaAssistant.Core.csproj": {
-              "projectPath": "C:\\Programming\\Manga Assistant 3\\src\\MangaAssistant.Core\\MangaAssistant.Core.csproj"
+            "C:\\Users\\jason.mesisco\\Documents\\GitHub\\Manga-Assistant\\src\\MangaAssistant.Core\\MangaAssistant.Core.csproj": {
+              "projectPath": "C:\\Users\\jason.mesisco\\Documents\\GitHub\\Manga-Assistant\\src\\MangaAssistant.Core\\MangaAssistant.Core.csproj"
             }
           }
         }

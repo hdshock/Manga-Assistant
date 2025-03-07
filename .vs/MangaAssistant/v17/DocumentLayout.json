@@ -1,16 +1,16 @@
 {
   "Version": 1,
-  "WorkspaceRootPath": "C:\\Programming\\Manga Assistant 3\\",
+  "WorkspaceRootPath": "C:\\Users\\jason.mesisco\\Documents\\GitHub\\Manga-Assistant\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{74E45B03-2E93-4A25-95F1-B8316DB94A58}|src\\MangaAssistant.WPF\\MangaAssistant.WPF.csproj|c:\\programming\\manga assistant 3\\src\\mangaassistant.wpf\\mangaassistant.wpf.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|",
+      "AbsoluteMoniker": "D:0:0:{74E45B03-2E93-4A25-95F1-B8316DB94A58}|src\\MangaAssistant.WPF\\MangaAssistant.WPF.csproj|c:\\users\\jason.mesisco\\documents\\github\\manga-assistant\\src\\mangaassistant.wpf\\mangaassistant.wpf.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|",
       "RelativeMoniker": "D:0:0:{74E45B03-2E93-4A25-95F1-B8316DB94A58}|src\\MangaAssistant.WPF\\MangaAssistant.WPF.csproj|solutionrelative:src\\mangaassistant.wpf\\mangaassistant.wpf.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
     },
     {
       "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\jason.mesisco\\AppData\\Local\\Temp\\.vsdbgsrc\\0a84cc53936b314ba955b54f50bf4796d8234943f3fd7b93873381b45d404026\\XamlReader.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{74E45B03-2E93-4A25-95F1-B8316DB94A58}|src\\MangaAssistant.WPF\\MangaAssistant.WPF.csproj|c:\\programming\\manga assistant 3\\src\\mangaassistant.wpf\\app.xaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "AbsoluteMoniker": "D:0:0:{74E45B03-2E93-4A25-95F1-B8316DB94A58}|src\\MangaAssistant.WPF\\MangaAssistant.WPF.csproj|c:\\users\\jason.mesisco\\documents\\github\\manga-assistant\\src\\mangaassistant.wpf\\app.xaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{74E45B03-2E93-4A25-95F1-B8316DB94A58}|src\\MangaAssistant.WPF\\MangaAssistant.WPF.csproj|solutionrelative:src\\mangaassistant.wpf\\app.xaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
   ],
@@ -21,27 +21,15 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 1,
+          "SelectedChildIndex": 0,
           "Children": [
-            {
-              "$type": "Document",
-              "DocumentIndex": 1,
-              "Title": "XamlReader.cs",
-              "DocumentMoniker": "C:\\Users\\jason.mesisco\\AppData\\Local\\Temp\\.vsdbgsrc\\0a84cc53936b314ba955b54f50bf4796d8234943f3fd7b93873381b45d404026\\XamlReader.cs",
-              "RelativeDocumentMoniker": "..\\..\\Users\\jason.mesisco\\AppData\\Local\\Temp\\.vsdbgsrc\\0a84cc53936b314ba955b54f50bf4796d8234943f3fd7b93873381b45d404026\\XamlReader.cs",
-              "ToolTip": "C:\\Users\\jason.mesisco\\AppData\\Local\\Temp\\.vsdbgsrc\\0a84cc53936b314ba955b54f50bf4796d8234943f3fd7b93873381b45d404026\\XamlReader.cs",
-              "RelativeToolTip": "..\\..\\Users\\jason.mesisco\\AppData\\Local\\Temp\\.vsdbgsrc\\0a84cc53936b314ba955b54f50bf4796d8234943f3fd7b93873381b45d404026\\XamlReader.cs",
-              "ViewState": "AgIAAK8BAAAAAAAAAAAswMYBAAAZAAAAAQAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-03-06T15:23:06.127Z"
-            },
             {
               "$type": "Document",
               "DocumentIndex": 0,
               "Title": "MangaAssistant.WPF.csproj",
-              "DocumentMoniker": "C:\\Programming\\Manga Assistant 3\\src\\MangaAssistant.WPF\\MangaAssistant.WPF.csproj",
+              "DocumentMoniker": "C:\\Users\\jason.mesisco\\Documents\\GitHub\\Manga-Assistant\\src\\MangaAssistant.WPF\\MangaAssistant.WPF.csproj",
               "RelativeDocumentMoniker": "src\\MangaAssistant.WPF\\MangaAssistant.WPF.csproj",
-              "ToolTip": "C:\\Programming\\Manga Assistant 3\\src\\MangaAssistant.WPF\\MangaAssistant.WPF.csproj",
+              "ToolTip": "C:\\Users\\jason.mesisco\\Documents\\GitHub\\Manga-Assistant\\src\\MangaAssistant.WPF\\MangaAssistant.WPF.csproj",
               "RelativeToolTip": "src\\MangaAssistant.WPF\\MangaAssistant.WPF.csproj",
               "ViewState": "AgIAAAsAAAAAAAAAAAAcwCMAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
@@ -50,11 +38,23 @@
             },
             {
               "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "XamlReader.cs",
+              "DocumentMoniker": "C:\\Users\\jason.mesisco\\AppData\\Local\\Temp\\.vsdbgsrc\\0a84cc53936b314ba955b54f50bf4796d8234943f3fd7b93873381b45d404026\\XamlReader.cs",
+              "RelativeDocumentMoniker": "..\\..\\..\\AppData\\Local\\Temp\\.vsdbgsrc\\0a84cc53936b314ba955b54f50bf4796d8234943f3fd7b93873381b45d404026\\XamlReader.cs",
+              "ToolTip": "C:\\Users\\jason.mesisco\\AppData\\Local\\Temp\\.vsdbgsrc\\0a84cc53936b314ba955b54f50bf4796d8234943f3fd7b93873381b45d404026\\XamlReader.cs",
+              "RelativeToolTip": "..\\..\\..\\AppData\\Local\\Temp\\.vsdbgsrc\\0a84cc53936b314ba955b54f50bf4796d8234943f3fd7b93873381b45d404026\\XamlReader.cs",
+              "ViewState": "AgIAAK8BAAAAAAAAAAAswMYBAAAZAAAAAQAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-03-06T15:23:06.127Z"
+            },
+            {
+              "$type": "Document",
               "DocumentIndex": 2,
               "Title": "App.xaml.cs",
-              "DocumentMoniker": "C:\\Programming\\Manga Assistant 3\\src\\MangaAssistant.WPF\\App.xaml.cs",
+              "DocumentMoniker": "C:\\Users\\jason.mesisco\\Documents\\GitHub\\Manga-Assistant\\src\\MangaAssistant.WPF\\App.xaml.cs",
               "RelativeDocumentMoniker": "src\\MangaAssistant.WPF\\App.xaml.cs",
-              "ToolTip": "C:\\Programming\\Manga Assistant 3\\src\\MangaAssistant.WPF\\App.xaml.cs",
+              "ToolTip": "C:\\Users\\jason.mesisco\\Documents\\GitHub\\Manga-Assistant\\src\\MangaAssistant.WPF\\App.xaml.cs",
               "RelativeToolTip": "src\\MangaAssistant.WPF\\App.xaml.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAA0AAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",

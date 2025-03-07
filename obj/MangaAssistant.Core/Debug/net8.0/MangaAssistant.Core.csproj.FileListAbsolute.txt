@@ -1,0 +1,12 @@
+C:\Programming\Manga Assistant 3\bin\MangaAssistant.Core\Debug\net8.0\MangaAssistant.Core.deps.json
+C:\Programming\Manga Assistant 3\bin\MangaAssistant.Core\Debug\net8.0\MangaAssistant.Core.dll
+C:\Programming\Manga Assistant 3\bin\MangaAssistant.Core\Debug\net8.0\MangaAssistant.Core.pdb
+C:\Programming\Manga Assistant 3\obj\MangaAssistant.Core\Debug\net8.0\MangaAssistant.Core.GeneratedMSBuildEditorConfig.editorconfig
+C:\Programming\Manga Assistant 3\obj\MangaAssistant.Core\Debug\net8.0\MangaAssistant.Core.AssemblyInfoInputs.cache
+C:\Programming\Manga Assistant 3\obj\MangaAssistant.Core\Debug\net8.0\MangaAssistant.Core.AssemblyInfo.cs
+C:\Programming\Manga Assistant 3\obj\MangaAssistant.Core\Debug\net8.0\MangaAssistant.Core.csproj.CoreCompileInputs.cache
+C:\Programming\Manga Assistant 3\obj\MangaAssistant.Core\Debug\net8.0\MangaAssistant.Core.dll
+C:\Programming\Manga Assistant 3\obj\MangaAssistant.Core\Debug\net8.0\refint\MangaAssistant.Core.dll
+C:\Programming\Manga Assistant 3\obj\MangaAssistant.Core\Debug\net8.0\MangaAssistant.Core.pdb
+C:\Programming\Manga Assistant 3\obj\MangaAssistant.Core\Debug\net8.0\ref\MangaAssistant.Core.dll
+C:\Programming\Manga Assistant 3\obj\MangaAssistant.Core\Debug\net8.0\MangaAssistant.Core.sourcelink.json

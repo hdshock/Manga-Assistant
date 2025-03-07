@@ -1,0 +1,4 @@
+C:\Programming\Manga Assistant 3\obj\MangaAssistant.WPF\Debug\net7.0-windows\MangaAssistant.WPF.csproj.AssemblyReference.cache
+C:\Programming\Manga Assistant 3\obj\MangaAssistant.WPF\Debug\net7.0-windows\App.baml
+C:\Programming\Manga Assistant 3\obj\MangaAssistant.WPF\Debug\net7.0-windows\App.g.cs
+C:\Programming\Manga Assistant 3\obj\MangaAssistant.WPF\Debug\net7.0-windows\MangaAssistant.WPF_MarkupCompile.cache

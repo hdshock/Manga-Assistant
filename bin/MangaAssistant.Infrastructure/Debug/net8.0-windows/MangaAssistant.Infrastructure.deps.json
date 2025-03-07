@@ -1,0 +1,39 @@
+{
+  "runtimeTarget": {
+    "name": ".NETCoreApp,Version=v8.0",
+    "signature": ""
+  },
+  "compilationOptions": {},
+  "targets": {
+    ".NETCoreApp,Version=v8.0": {
+      "MangaAssistant.Infrastructure/1.0.0": {
+        "dependencies": {
+          "MangaAssistant.Core": "1.0.0"
+        },
+        "runtime": {
+          "MangaAssistant.Infrastructure.dll": {}
+        }
+      },
+      "MangaAssistant.Core/1.0.0": {
+        "runtime": {
+          "MangaAssistant.Core.dll": {
+            "assemblyVersion": "1.0.0.0",
+            "fileVersion": "1.0.0.0"
+          }
+        }
+      }
+    }
+  },
+  "libraries": {
+    "MangaAssistant.Infrastructure/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "MangaAssistant.Core/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    }
+  }
+}

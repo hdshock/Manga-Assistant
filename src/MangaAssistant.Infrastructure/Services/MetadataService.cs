@@ -54,23 +54,20 @@ namespace MangaAssistant.Infrastructure.Services
                 series.Metadata.LastModified = DateTime.Now;
                 series.Metadata.HasMetadata = true;
 
-                // Save metadata using LibraryScanner
-                if (LibraryService is LibraryScanner libraryScanner)
-                {
-                    await libraryScanner.SaveSeriesMetadataAsync(series);
-                    var metadataPath = Path.Combine(series.FolderPath, "series-info.json");
-                    Debug.WriteLine($"Metadata saved for series: {series.Title} at {metadataPath}");
+                // Save metadata using LibraryService
+                await LibraryService.SaveSeriesMetadataAsync(series);
+                var metadataPath = Path.Combine(series.FolderPath, "series-info.json");
+                Debug.WriteLine($"Metadata saved for series: {series.Title} at {metadataPath}");
 
-                    // Verify the file was written
-                    if (File.Exists(metadataPath))
-                    {
-                        var fileContent = await File.ReadAllTextAsync(metadataPath);
-                        Debug.WriteLine($"Metadata file size: {fileContent.Length} bytes");
-                    }
-                    else
-                    {
-                        Debug.WriteLine("Warning: Metadata file was not created!");
-                    }
+                // Verify the file was written
+                if (File.Exists(metadataPath))
+                {
+                    var fileContent = await File.ReadAllTextAsync(metadataPath);
+                    Debug.WriteLine($"Metadata file size: {fileContent.Length} bytes");
+                }
+                else
+                {
+                    Debug.WriteLine("Warning: Metadata file was not created!");
                 }
 
                 // Trigger a library update

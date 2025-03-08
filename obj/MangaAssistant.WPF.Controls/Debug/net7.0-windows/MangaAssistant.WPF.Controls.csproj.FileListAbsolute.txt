@@ -1,0 +1,12 @@
+C:\Programming\Manga Assistant 3\obj\MangaAssistant.WPF.Controls\Debug\net7.0-windows\MangaAssistant.WPF.Controls.csproj.AssemblyReference.cache
+C:\Programming\Manga Assistant 3\obj\MangaAssistant.WPF.Controls\Debug\net7.0-windows\MangaCard.baml
+C:\Programming\Manga Assistant 3\obj\MangaAssistant.WPF.Controls\Debug\net7.0-windows\MetadataSearchDialog.baml
+C:\Programming\Manga Assistant 3\obj\MangaAssistant.WPF.Controls\Debug\net7.0-windows\SeriesCard.baml
+C:\Programming\Manga Assistant 3\obj\MangaAssistant.WPF.Controls\Debug\net7.0-windows\SeriesPage.baml
+C:\Programming\Manga Assistant 3\obj\MangaAssistant.WPF.Controls\Debug\net7.0-windows\MangaCard.g.cs
+C:\Programming\Manga Assistant 3\obj\MangaAssistant.WPF.Controls\Debug\net7.0-windows\MetadataSearchDialog.g.cs
+C:\Programming\Manga Assistant 3\obj\MangaAssistant.WPF.Controls\Debug\net7.0-windows\SeriesCard.g.cs
+C:\Programming\Manga Assistant 3\obj\MangaAssistant.WPF.Controls\Debug\net7.0-windows\SeriesPage.g.cs
+C:\Programming\Manga Assistant 3\obj\MangaAssistant.WPF.Controls\Debug\net7.0-windows\SettingsPage.g.cs
+C:\Programming\Manga Assistant 3\obj\MangaAssistant.WPF.Controls\Debug\net7.0-windows\MangaAssistant.WPF.Controls_MarkupCompile.cache
+C:\Programming\Manga Assistant 3\obj\MangaAssistant.WPF.Controls\Debug\net7.0-windows\MangaAssistant.WPF.Controls_MarkupCompile.lref

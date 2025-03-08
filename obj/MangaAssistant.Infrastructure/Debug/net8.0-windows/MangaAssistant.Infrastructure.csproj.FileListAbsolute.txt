@@ -1,0 +1,28 @@
+C:\Programming\Manga Assistant 3\bin\MangaAssistant.Infrastructure\Debug\net8.0-windows\MangaAssistant.Infrastructure.deps.json
+C:\Programming\Manga Assistant 3\bin\MangaAssistant.Infrastructure\Debug\net8.0-windows\MangaAssistant.Infrastructure.dll
+C:\Programming\Manga Assistant 3\bin\MangaAssistant.Infrastructure\Debug\net8.0-windows\MangaAssistant.Infrastructure.pdb
+C:\Programming\Manga Assistant 3\obj\MangaAssistant.Infrastructure\Debug\net8.0-windows\MangaAssistant.Infrastructure.csproj.AssemblyReference.cache
+C:\Programming\Manga Assistant 3\obj\MangaAssistant.Infrastructure\Debug\net8.0-windows\MangaAssistant.Infrastructure.GeneratedMSBuildEditorConfig.editorconfig
+C:\Programming\Manga Assistant 3\obj\MangaAssistant.Infrastructure\Debug\net8.0-windows\MangaAssistant.Infrastructure.AssemblyInfoInputs.cache
+C:\Programming\Manga Assistant 3\obj\MangaAssistant.Infrastructure\Debug\net8.0-windows\MangaAssistant.Infrastructure.AssemblyInfo.cs
+C:\Programming\Manga Assistant 3\obj\MangaAssistant.Infrastructure\Debug\net8.0-windows\MangaAssistant.Infrastructure.csproj.CoreCompileInputs.cache
+C:\Programming\Manga Assistant 3\obj\MangaAssistant.Infrastructure\Debug\net8.0-windows\MangaAssistant.Infrastructure.sourcelink.json
+C:\Programming\Manga Assistant 3\obj\MangaAssistant.Infrastructure\Debug\net8.0-windows\MangaAss.50EEC6D8.Up2Date
+C:\Programming\Manga Assistant 3\obj\MangaAssistant.Infrastructure\Debug\net8.0-windows\MangaAssistant.Infrastructure.dll
+C:\Programming\Manga Assistant 3\obj\MangaAssistant.Infrastructure\Debug\net8.0-windows\refint\MangaAssistant.Infrastructure.dll
+C:\Programming\Manga Assistant 3\obj\MangaAssistant.Infrastructure\Debug\net8.0-windows\MangaAssistant.Infrastructure.pdb
+C:\Programming\Manga Assistant 3\obj\MangaAssistant.Infrastructure\Debug\net8.0-windows\ref\MangaAssistant.Infrastructure.dll
+C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\bin\MangaAssistant.Infrastructure\Debug\net8.0-windows\MangaAssistant.Infrastructure.deps.json
+C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\bin\MangaAssistant.Infrastructure\Debug\net8.0-windows\MangaAssistant.Infrastructure.dll
+C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\bin\MangaAssistant.Infrastructure\Debug\net8.0-windows\MangaAssistant.Infrastructure.pdb
+C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\obj\MangaAssistant.Infrastructure\Debug\net8.0-windows\MangaAssistant.Infrastructure.csproj.AssemblyReference.cache
+C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\obj\MangaAssistant.Infrastructure\Debug\net8.0-windows\MangaAssistant.Infrastructure.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\obj\MangaAssistant.Infrastructure\Debug\net8.0-windows\MangaAssistant.Infrastructure.AssemblyInfoInputs.cache
+C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\obj\MangaAssistant.Infrastructure\Debug\net8.0-windows\MangaAssistant.Infrastructure.AssemblyInfo.cs
+C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\obj\MangaAssistant.Infrastructure\Debug\net8.0-windows\MangaAssistant.Infrastructure.csproj.CoreCompileInputs.cache
+C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\obj\MangaAssistant.Infrastructure\Debug\net8.0-windows\MangaAssistant.Infrastructure.sourcelink.json
+C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\obj\MangaAssistant.Infrastructure\Debug\net8.0-windows\MangaAss.50EEC6D8.Up2Date
+C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\obj\MangaAssistant.Infrastructure\Debug\net8.0-windows\MangaAssistant.Infrastructure.dll
+C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\obj\MangaAssistant.Infrastructure\Debug\net8.0-windows\refint\MangaAssistant.Infrastructure.dll
+C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\obj\MangaAssistant.Infrastructure\Debug\net8.0-windows\MangaAssistant.Infrastructure.pdb
+C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\obj\MangaAssistant.Infrastructure\Debug\net8.0-windows\ref\MangaAssistant.Infrastructure.dll

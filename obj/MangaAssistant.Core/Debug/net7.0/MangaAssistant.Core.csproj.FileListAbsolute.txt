@@ -1,0 +1,5 @@
+C:\Programming\Manga Assistant 3\obj\MangaAssistant.Core\Debug\net7.0\MangaAssistant.Core.GeneratedMSBuildEditorConfig.editorconfig
+C:\Programming\Manga Assistant 3\obj\MangaAssistant.Core\Debug\net7.0\MangaAssistant.Core.AssemblyInfoInputs.cache
+C:\Programming\Manga Assistant 3\obj\MangaAssistant.Core\Debug\net7.0\MangaAssistant.Core.AssemblyInfo.cs
+C:\Programming\Manga Assistant 3\obj\MangaAssistant.Core\Debug\net7.0\MangaAssistant.Core.csproj.CoreCompileInputs.cache
+C:\Programming\Manga Assistant 3\obj\MangaAssistant.Core\Debug\net7.0\MangaAssistant.Core.sourcelink.json

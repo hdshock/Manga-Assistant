@@ -1,0 +1,10 @@
+{
+  "version": 2,
+  "dgSpecHash": "f+51f2uaPYc=",
+  "success": true,
+  "projectFilePath": "C:\\Users\\jason.mesisco\\Documents\\GitHub\\Manga-Assistant\\src\\MangaAssistant.WPF\\MangaAssistant.WPF.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\jason.mesisco\\.nuget\\packages\\ookii.dialogs.wpf\\5.0.1\\ookii.dialogs.wpf.5.0.1.nupkg.sha512"
+  ],
+  "logs": []
+}

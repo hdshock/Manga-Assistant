@@ -11,11 +11,11 @@ namespace MangaAssistant.Common.Logging
     public static class Logger
     {
         private static readonly object _lock = new object();
-        private static string _logFilePath;
-        private static string _logDirectory;
+        private static string _logFilePath = string.Empty;
+        private static string _logDirectory = string.Empty;
         private static bool _initialized = false;
         private static readonly List<LogEntry> _logEntries = new List<LogEntry>();
-        private static readonly int MaxLogEntries = 1000;
+        private static readonly int MaxLogEntries = 5000; // Increased from 1000 to 5000
 
         public static void Initialize(string logDirectory)
         {
@@ -33,7 +33,7 @@ namespace MangaAssistant.Common.Logging
                 _logFilePath = Path.Combine(logDirectory, $"MangaAssistant_{DateTime.Now:yyyyMMdd_HHmmss}.log");
                 _initialized = true;
 
-                Log("Logger initialized");
+                Log("Logger initialized", LogLevel.Info, "Logger");
             }
             catch (Exception ex)
             {
@@ -41,38 +41,35 @@ namespace MangaAssistant.Common.Logging
             }
         }
 
-        public static void Log(string message, LogLevel level = LogLevel.Info)
+        public static void Log(string message, LogLevel level = LogLevel.Info, string category = "", string context = "", Dictionary<string, string>? tags = null)
         {
             if (!_initialized) return;
 
             try
             {
                 var timestamp = DateTime.Now;
-                var logMessage = $"[{level.ToString().ToUpper()}] {timestamp:yyyy-MM-dd HH:mm:ss} {message}";
-                Debug.WriteLine(logMessage);
-
+                var logEntry = CreateLogEntry(message, level, timestamp, category, context, tags);
+                
                 lock (_lock)
                 {
-                    File.AppendAllText(_logFilePath, logMessage + Environment.NewLine);
+                    // Write to file
+                    File.AppendAllText(_logFilePath, logEntry.FullText + Environment.NewLine);
                     
-                    // Add to in-memory log entries for the LogWindow
-                    _logEntries.Add(new LogEntry
-                    {
-                        Level = level.ToString().ToUpper(),
-                        Timestamp = timestamp.ToString("yyyy-MM-dd HH:mm:ss"),
-                        Message = message,
-                        FullText = logMessage
-                    });
+                    // Add to in-memory log entries
+                    _logEntries.Add(logEntry);
                     
                     // Keep only the most recent entries
-                    if (_logEntries.Count > MaxLogEntries)
+                    while (_logEntries.Count > MaxLogEntries)
                     {
                         _logEntries.RemoveAt(0);
                     }
                     
                     // Raise the LogAdded event
-                    OnLogAdded(new LogEventArgs(message, level, timestamp));
+                    OnLogAdded(new LogEventArgs(message, level, timestamp, category, context, tags));
                 }
+
+                // Write to debug output
+                Debug.WriteLine(logEntry.FullText);
             }
             catch (Exception ex)
             {
@@ -80,7 +77,46 @@ namespace MangaAssistant.Common.Logging
             }
         }
 
-        public static void LogException(Exception ex, string context = "")
+        public static async Task LogAsync(string message, LogLevel level = LogLevel.Info, string category = "", string context = "", Dictionary<string, string>? tags = null)
+        {
+            if (!_initialized) return;
+
+            try
+            {
+                var timestamp = DateTime.Now;
+                var logEntry = CreateLogEntry(message, level, timestamp, category, context, tags);
+
+                await Task.Run(() =>
+                {
+                    lock (_lock)
+                    {
+                        // Write to file
+                        File.AppendAllText(_logFilePath, logEntry.FullText + Environment.NewLine);
+                        
+                        // Add to in-memory log entries
+                        _logEntries.Add(logEntry);
+                        
+                        // Keep only the most recent entries
+                        while (_logEntries.Count > MaxLogEntries)
+                        {
+                            _logEntries.RemoveAt(0);
+                        }
+                        
+                        // Raise the LogAdded event
+                        OnLogAdded(new LogEventArgs(message, level, timestamp, category, context, tags));
+                    }
+                });
+
+                // Write to debug output
+                Debug.WriteLine(logEntry.FullText);
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Failed to log message asynchronously: {ex.Message}");
+            }
+        }
+
+        public static void LogException(Exception ex, string context = "", string category = "", Dictionary<string, string>? tags = null)
         {
             if (!_initialized) return;
 
@@ -97,71 +133,43 @@ namespace MangaAssistant.Common.Logging
                 sb.AppendLine($"StackTrace: {ex.InnerException.StackTrace}");
             }
 
-            Log(sb.ToString(), LogLevel.Error);
-        }
-
-        public static async Task LogAsync(string message, LogLevel level = LogLevel.Info)
-        {
-            if (!_initialized) return;
-
-            try
+            var exceptionTags = new Dictionary<string, string>
             {
-                var timestamp = DateTime.Now;
-                var logMessage = $"[{level.ToString().ToUpper()}] {timestamp:yyyy-MM-dd HH:mm:ss} {message}";
-                Debug.WriteLine(logMessage);
+                { "ExceptionType", ex.GetType().Name },
+                { "Source", ex.Source ?? "Unknown" }
+            };
 
-                await Task.Run(() =>
+            if (tags != null)
+            {
+                foreach (var tag in tags)
                 {
-                    lock (_lock)
-                    {
-                        File.AppendAllText(_logFilePath, logMessage + Environment.NewLine);
-                        
-                        // Add to in-memory log entries for the LogWindow
-                        _logEntries.Add(new LogEntry
-                        {
-                            Level = level.ToString().ToUpper(),
-                            Timestamp = timestamp.ToString("yyyy-MM-dd HH:mm:ss"),
-                            Message = message,
-                            FullText = logMessage
-                        });
-                        
-                        // Keep only the most recent entries
-                        if (_logEntries.Count > MaxLogEntries)
-                        {
-                            _logEntries.RemoveAt(0);
-                        }
-                        
-                        // Raise the LogAdded event
-                        OnLogAdded(new LogEventArgs(message, level, timestamp));
-                    }
-                });
+                    exceptionTags[tag.Key] = tag.Value;
+                }
             }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"Failed to log message asynchronously: {ex.Message}");
-            }
+
+            Log(sb.ToString(), LogLevel.Error, category, context, exceptionTags);
         }
         
         // Methods for the LogWindow
-        public static List<string> GetLogs(int maxLines = 1000)
+        public static List<LogEntry> GetLogs(int maxLines = 5000)
         {
-            if (!_initialized) return new List<string>();
+            if (!_initialized) return new List<LogEntry>();
             
             lock (_lock)
             {
-                return _logEntries.Select(e => e.FullText).ToList();
+                return _logEntries.Take(maxLines).ToList();
             }
         }
         
-        public static async Task<List<string>> GetLogsAsync(int maxLines = 1000)
+        public static async Task<List<LogEntry>> GetLogsAsync(int maxLines = 5000)
         {
-            if (!_initialized) return new List<string>();
+            if (!_initialized) return new List<LogEntry>();
             
             return await Task.Run(() =>
             {
                 lock (_lock)
                 {
-                    return _logEntries.Select(e => e.FullText).ToList();
+                    return _logEntries.Take(maxLines).ToList();
                 }
             });
         }
@@ -178,7 +186,7 @@ namespace MangaAssistant.Common.Logging
                 File.WriteAllText(_logFilePath, string.Empty);
                 
                 // Add a log entry indicating logs were cleared
-                Log("Logs cleared by user", LogLevel.Info);
+                Log("Logs cleared by user", LogLevel.Info, "Logger");
             }
         }
         
@@ -196,17 +204,46 @@ namespace MangaAssistant.Common.Logging
                     File.WriteAllText(_logFilePath, string.Empty);
                     
                     // Add a log entry indicating logs were cleared
-                    Log("Logs cleared by user", LogLevel.Info);
+                    Log("Logs cleared by user", LogLevel.Info, "Logger");
                 }
             });
         }
         
         // Event for real-time log updates
-        public static event EventHandler<LogEventArgs> LogAdded;
+        public static event EventHandler<LogEventArgs>? LogAdded;
         
         private static void OnLogAdded(LogEventArgs e)
         {
             LogAdded?.Invoke(null, e);
+        }
+
+        private static LogEntry CreateLogEntry(string message, LogLevel level, DateTime timestamp, string category, string context, Dictionary<string, string>? tags)
+        {
+            var fullText = $"[{level.ToString().ToUpper()}] {timestamp:yyyy-MM-dd HH:mm:ss}";
+            if (!string.IsNullOrEmpty(category))
+            {
+                fullText += $" [{category}]";
+            }
+            fullText += $" {message}";
+            if (!string.IsNullOrEmpty(context))
+            {
+                fullText += $" (Context: {context})";
+            }
+            if (tags != null && tags.Count > 0)
+            {
+                fullText += $" Tags: {string.Join(", ", tags.Select(t => $"{t.Key}={t.Value}"))}";
+            }
+
+            return new LogEntry
+            {
+                Level = level.ToString().ToUpper(),
+                Timestamp = timestamp.ToString("yyyy-MM-dd HH:mm:ss"),
+                Message = message,
+                FullText = fullText,
+                Category = category,
+                Context = context,
+                Tags = tags ?? new Dictionary<string, string>()
+            };
         }
     }
 
@@ -224,12 +261,18 @@ namespace MangaAssistant.Common.Logging
         public string Message { get; }
         public LogLevel Level { get; }
         public DateTime Timestamp { get; }
+        public string Category { get; }
+        public string Context { get; }
+        public Dictionary<string, string>? Tags { get; }
         
-        public LogEventArgs(string message, LogLevel level, DateTime timestamp)
+        public LogEventArgs(string message, LogLevel level, DateTime timestamp, string category = "", string context = "", Dictionary<string, string>? tags = null)
         {
             Message = message;
             Level = level;
             Timestamp = timestamp;
+            Category = category;
+            Context = context;
+            Tags = tags;
         }
     }
     
@@ -239,5 +282,8 @@ namespace MangaAssistant.Common.Logging
         public string Timestamp { get; set; } = string.Empty;
         public string Message { get; set; } = string.Empty;
         public string FullText { get; set; } = string.Empty;
+        public string Category { get; set; } = string.Empty;
+        public string Context { get; set; } = string.Empty;
+        public Dictionary<string, string> Tags { get; set; } = new();
     }
 }

@@ -206,11 +206,14 @@ namespace MangaAssistant.Infrastructure.Services
                     return;
                 }
                 
+                bool hasChanges = false;
+                
                 // Update the series list with found series
                 lock (_seriesLock)
                 {
                     Logger.Log("Updating series list", LogLevel.Info);
-                    // Keep existing series that are still valid
+                    
+                    // Create a lookup of existing series by folder path
                     var existingSeries = _series
                         .Where(s => Directory.Exists(s.FolderPath))
                         .ToDictionary(s => s.FolderPath, StringComparer.OrdinalIgnoreCase);
@@ -222,64 +225,110 @@ namespace MangaAssistant.Infrastructure.Services
                         if (existingSeries.TryGetValue(series.FolderPath, out var existing))
                         {
                             Logger.Log($"Updating existing series: {series.Title}", LogLevel.Info);
-                            // Update existing series while preserving metadata and progress
-                            existing.Title = series.Title;
-                            existing.LastModified = series.LastModified;
-                            existing.ChapterCount = series.ChapterCount;
-                            existing.Chapters = series.Chapters;
-                            if (!string.IsNullOrEmpty(series.CoverPath))
+                            
+                            // Check if there are actual changes
+                            bool seriesChanged = false;
+                            
+                            // Update basic properties
+                            if (existing.Title != series.Title)
+                            {
+                                existing.Title = series.Title;
+                                seriesChanged = true;
+                            }
+                            
+                            if (existing.LastModified != series.LastModified)
+                            {
+                                existing.LastModified = series.LastModified;
+                                seriesChanged = true;
+                            }
+                            
+                            if (existing.ChapterCount != series.ChapterCount)
+                            {
+                                existing.ChapterCount = series.ChapterCount;
+                                seriesChanged = true;
+                            }
+                            
+                            // Update chapters if they've changed
+                            if (!existing.Chapters.SequenceEqual(series.Chapters, new ChapterEqualityComparer()))
+                            {
+                                Logger.Log($"Chapters changed for series: {series.Title}", LogLevel.Info);
+                                existing.Chapters = series.Chapters;
+                                seriesChanged = true;
+                            }
+                            
+                            // Update cover if it's changed
+                            if (!string.IsNullOrEmpty(series.CoverPath) && existing.CoverPath != series.CoverPath)
                             {
                                 existing.CoverPath = series.CoverPath;
+                                seriesChanged = true;
+                            }
+                            
+                            if (seriesChanged)
+                            {
+                                hasChanges = true;
+                                Logger.Log($"Series {series.Title} has been updated", LogLevel.Info);
                             }
                         }
                         else
                         {
-                            Debug.WriteLine($"Adding new series: {series.Title}");
-                            // Add new series
+                            Logger.Log($"Adding new series: {series.Title}", LogLevel.Info);
                             _series.Add(series);
                             SeriesAdded?.Invoke(this, series);
+                            hasChanges = true;
                         }
                     }
 
-                    // Only remove series that no longer exist
+                    // Remove series that no longer exist
                     var removedSeries = _series
                         .Where(s => !Directory.Exists(s.FolderPath))
                         .ToList();
 
                     foreach (var series in removedSeries)
                     {
-                        Debug.WriteLine($"Removing series that no longer exists: {series.Title}");
+                        Logger.Log($"Removing series that no longer exists: {series.Title}", LogLevel.Info);
                         _series.Remove(series);
+                        hasChanges = true;
                     }
 
-                    // Sort the list
-                    _series = _series.OrderBy(s => s.Title).ToList();
-                    Debug.WriteLine($"Final series count: {_series.Count}");
+                    // Sort the list if there were changes
+                    if (hasChanges)
+                    {
+                        _series = _series.OrderBy(s => s.Title).ToList();
+                        Logger.Log($"Final series count: {_series.Count}", LogLevel.Info);
+                    }
                 }
 
                 // Process cover insertion if the setting is enabled
                 if (_settingsService.InsertCoverIntoFirstChapter)
                 {
-                    Debug.WriteLine("Cover insertion setting is enabled. Processing covers...");
+                    Logger.Log("Cover insertion setting is enabled. Processing covers...", LogLevel.Info);
                     await _libraryScanner.InsertCoversIntoFirstChaptersAsync(_series);
                 }
                 else
                 {
-                    Debug.WriteLine("Cover insertion setting is disabled. Skipping cover processing.");
+                    Logger.Log("Cover insertion setting is disabled. Skipping cover processing.", LogLevel.Info);
                 }
 
-                // Save updated library to cache
-                await SaveLibraryCacheAsync();
-                Debug.WriteLine("Saved library cache");
+                // Only save and notify if there were changes
+                if (hasChanges)
+                {
+                    // Save updated library to cache
+                    await SaveLibraryCacheAsync();
+                    Logger.Log("Saved library cache", LogLevel.Info);
 
-                // Notify that library is updated
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Series)));
-                LibraryUpdated?.Invoke(this, new Core.LibraryUpdatedEventArgs(_series));
+                    // Notify that library is updated
+                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Series)));
+                    LibraryUpdated?.Invoke(this, new Core.LibraryUpdatedEventArgs(_series));
+                }
+                else
+                {
+                    Logger.Log("No changes detected during scan", LogLevel.Info);
+                }
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Error scanning library: {ex.Message}");
-                Debug.WriteLine($"Stack trace: {ex.StackTrace}");
+                Logger.Log($"Error scanning library: {ex.Message}", LogLevel.Error);
+                Logger.Log($"Stack trace: {ex.StackTrace}", LogLevel.Error);
             }
             finally
             {
@@ -308,35 +357,39 @@ namespace MangaAssistant.Infrastructure.Services
         {
             try
             {
-                // Clear memory state
-                lock (_seriesLock)
+                // Clear the in-memory series list
+                _series.Clear();
+                
+                // Delete the cache file if it exists
+                string cachePath = CachePath;
+                if (File.Exists(cachePath))
                 {
-                    _series.Clear();
+                    File.Delete(cachePath);
+                    Debug.WriteLine($"Deleted cache file at {cachePath}");
                 }
                 
-                // Delete cache file if it exists
-                if (File.Exists(CachePath))
+                // Clear any temporary files
+                var libraryPath = _settingsService.LibraryPath;
+                if (!string.IsNullOrEmpty(libraryPath) && Directory.Exists(libraryPath))
                 {
-                    File.Delete(CachePath);
-                }
-
-                // Clear any metadata cache files in series folders
-                if (!string.IsNullOrWhiteSpace(_settingsService.LibraryPath) && Directory.Exists(_settingsService.LibraryPath))
-                {
-                    foreach (var dir in Directory.GetDirectories(_settingsService.LibraryPath))
+                    var tempFiles = Directory.GetFiles(libraryPath, "temp_*", SearchOption.AllDirectories);
+                    foreach (var tempFile in tempFiles)
                     {
-                        var metadataPath = Path.Combine(dir, "series-info.json");
-                        if (File.Exists(metadataPath))
+                        try
                         {
-                            File.Delete(metadataPath);
+                            File.Delete(tempFile);
+                            Debug.WriteLine($"Deleted temporary file: {tempFile}");
+                        }
+                        catch (Exception ex)
+                        {
+                            Debug.WriteLine($"Error deleting temporary file {tempFile}: {ex.Message}");
                         }
                     }
                 }
-
-                // Notify all listeners that the library is cleared
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Series)));
+                
+                // Notify that the library has been cleared
                 LibraryUpdated?.Invoke(this, new Core.LibraryUpdatedEventArgs(new List<Series>()));
-
+                
                 await Task.CompletedTask;
             }
             catch (Exception ex)
@@ -386,11 +439,48 @@ namespace MangaAssistant.Infrastructure.Services
 
         public async Task UpdateSeriesCover(string seriesPath, string coverPath)
         {
-            var targetPath = Path.Combine(seriesPath, "cover" + Path.GetExtension(coverPath));
-            File.Copy(coverPath, targetPath, true);
-            
-            // Update cache after cover changes
-            await SaveLibraryCacheAsync();
+            try
+            {
+                Logger.Log($"Updating cover for series at {seriesPath} with new cover {coverPath}", LogLevel.Info);
+                
+                // Generate the new cover path
+                var targetPath = Path.Combine(seriesPath, "cover" + Path.GetExtension(coverPath));
+                
+                // Copy the new cover file
+                File.Copy(coverPath, targetPath, true);
+                Logger.Log($"Copied cover to {targetPath}", LogLevel.Info);
+                
+                // Update the series in memory
+                lock (_seriesLock)
+                {
+                    var series = _series.FirstOrDefault(s => s.FolderPath.Equals(seriesPath, StringComparison.OrdinalIgnoreCase));
+                    if (series != null)
+                    {
+                        series.CoverPath = targetPath;
+                        series.LastModified = DateTime.Now;
+                        
+                        // Update metadata
+                        if (series.Metadata == null)
+                        {
+                            series.Metadata = new SeriesMetadata();
+                        }
+                        series.Metadata.CoverPath = targetPath;
+                        
+                        // Trigger UI updates
+                        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Series)));
+                        LibraryUpdated?.Invoke(this, new Core.LibraryUpdatedEventArgs(_series));
+                    }
+                }
+                
+                // Save changes to disk
+                await SaveLibraryCacheAsync();
+                Logger.Log("Cover update completed successfully", LogLevel.Info);
+            }
+            catch (Exception ex)
+            {
+                Logger.Log($"Error updating series cover: {ex.Message}", LogLevel.Error);
+                throw;
+            }
         }
 
         private Series? ScanSeriesDirectory(string directory)
@@ -489,6 +579,26 @@ namespace MangaAssistant.Infrastructure.Services
             {
                 Debug.WriteLine($"Error initiating cover processing: {ex.Message}");
                 Debug.WriteLine($"Stack trace: {ex.StackTrace}");
+            }
+        }
+
+        // Add ChapterEqualityComparer class for comparing chapters
+        private class ChapterEqualityComparer : IEqualityComparer<Chapter>
+        {
+            public bool Equals(Chapter? x, Chapter? y)
+            {
+                if (ReferenceEquals(x, y)) return true;
+                if (x is null || y is null) return false;
+                
+                return x.Number == y.Number &&
+                       x.Volume == y.Volume &&
+                       x.FilePath == y.FilePath &&
+                       x.PageCount == y.PageCount;
+            }
+
+            public int GetHashCode(Chapter obj)
+            {
+                return HashCode.Combine(obj.Number, obj.Volume, obj.FilePath, obj.PageCount);
             }
         }
     }

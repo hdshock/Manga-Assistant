@@ -10,11 +10,11 @@ none
 false
 TRACE;DEBUG;NET;NET8_0;NETCOREAPP
 
-8-1647429815
+10-1000763940
 
-181544767386
+23-468076923
 211-1185772956
-ChapterCard.xaml;ChapterContextMenu.xaml;ChapterList.xaml;LogWindow.xaml;MangaCard.xaml;MetadataSearchDialog.xaml;SeriesPage.xaml;SettingsPage.xaml;
+ChapterCard.xaml;ChapterContextMenu.xaml;ChapterList.xaml;DirectChapterDisplay.xaml;LogWindow.xaml;MangaCard.xaml;MetadataSearchDialog.xaml;SeriesPage.xaml;SettingsPage.xaml;TestChapterDisplay.xaml;
 
 False
 

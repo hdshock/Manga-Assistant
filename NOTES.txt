@@ -168,6 +168,253 @@ The application follows a clean architecture pattern with the following layers:
 - Fix 7: Used background priority for dispatcher operations to keep the UI responsive
 - These changes significantly improve the LogWindow's performance and responsiveness when displaying a large number of logs
 
+### Enhanced Chapter and Volume Detection (2025-03-11)
+- Issue: Chapter and volume detection needed to be more accurate and consistent with industry standards
+- Fix 1: Completely redesigned the chapter and volume detection logic based on Manga Manager's approach
+- Fix 2: Added filename normalization to remove common file suffixes and scan group tags
+- Fix 3: Implemented series name extraction to avoid confusing series names with chapter numbers
+- Fix 4: Enhanced regex patterns to better handle various manga naming conventions
+- Fix 5: Added support for Japanese/Chinese chapter and volume indicators (第, 話, 话, 巻, 卷)
+- Fix 6: Improved special case handling for series with unique naming patterns
+- Fix 7: Created a more structured fallback system that tries different methods in sequence
+- Fix 8: Added better metadata extraction from ComicInfo.xml files
+- These changes ensure more accurate chapter and volume numbering, which is critical for proper sorting and organization in Kavita and other readers
+
+### Decimal Chapter Number Display Fix (2025-03-13)
+- Issue: Decimal chapter numbers (e.g., Chapter 1.5) were not displaying correctly in the UI
+- Root Cause: The StringFormat pattern in ChapterCard.xaml was not properly configured for decimal values
+- Fix 1: Updated the StringFormat in ChapterCard.xaml from 'Chapter {0:0.0#}' to 'Chapter {0:0.##}'
+- Fix 2: Simplified and standardized the HandleSpecialCaseSeries method to better handle decimal chapter numbers
+- Fix 3: Added consistent detection patterns for decimal chapter numbers across all special case series
+- Fix 4: Enhanced logging to provide clearer information about decimal chapter number detection
+- These changes ensure that decimal chapter numbers are correctly displayed in the UI with proper formatting
+
+### Decimal Chapter Numbers Less Than 1 Fix (2025-03-13)
+- Issue: Decimal chapter numbers less than 1 (e.g., Chapter 0.5) were not being detected or displayed correctly
+- Root Cause: The regex patterns and display format were not optimized for decimal values less than 1
+- Fix 1: Updated the StringFormat in ChapterCard.xaml to 'Chapter {0:0.00}' to ensure proper display of decimal values
+- Fix 2: Added specific regex patterns for decimal chapter numbers less than 1 in the ChapterPatterns array
+- Fix 3: Enhanced the ExtractChapterNumberFromFileName method to prioritize decimal numbers less than 1
+- Fix 4: Updated the HandleSpecialCaseSeries method to specifically check for decimal chapter numbers less than 1
+- Fix 5: Improved the ComicInfo.xml parsing to better handle decimal values less than 1
+- Fix 6: Added extensive logging to track the detection of decimal chapter numbers less than 1
+- These changes ensure that "half chapters" or special chapters with decimal numbering less than 1 (like 0.5) are correctly detected and displayed
+
+### Custom Chapter Number Converter (2025-03-13)
+- Issue: Despite the format string updates, decimal chapter numbers less than 1 were still not displaying correctly in the UI
+- Root Cause: The StringFormat approach wasn't providing enough control over the formatting of different number ranges
+- Fix 1: Created a custom ChapterNumberConverter class that handles different formatting based on the chapter number value
+- Fix 2: For chapter numbers less than 1, the converter ensures the leading zero and two decimal places are displayed
+- Fix 3: For chapter numbers greater than or equal to 1, the converter shows up to two decimal places only when needed
+- Fix 4: Updated both SeriesPage.xaml and ChapterCard.xaml to use the new converter instead of StringFormat
+- Fix 5: Added debug logging to the converter to help track chapter number formatting issues
+- These changes provide a more robust and consistent display of chapter numbers throughout the application, especially for decimal values less than 1
+
+### Chapter Number Display Testing (2024-03-13)
+- Issue: Some chapters displaying as "Chapter 00" when they should be decimal chapters
+- Test Environment Setup: Created TestChapterDisplay control with test cases for various chapter number scenarios
+- Test Results:
+  1. Raw Number Storage Test:
+     - Test cases: 0.2, 0.5, 0.01, 1, 1.5, 2, 10.1, 100.5
+     - Result: PASSED - Numbers stored correctly in data model
+  2. ChapterNumberConverter Test:
+     - Test cases: Same as above
+     - Result: PASSED - All numbers formatted correctly including:
+       * Decimals less than 1 (e.g., "Chapter 0.20")
+       * Whole numbers (e.g., "Chapter 1")
+       * Mixed decimals (e.g., "Chapter 1.5")
+  3. Chapter Sorting Test:
+     - Result: PASSED - Correct ascending order from 0.01 to 100.5
+  4. ChapterCard UI Test:
+     - Result: PASSED - Proper display in actual UI components
+
+Conclusions:
+1. Core number handling components are working correctly
+2. Issue likely stems from one of:
+   a) Chapter number extraction from filenames
+   b) ComicInfo.xml parsing
+   c) Special series naming pattern handling
+
+Next Steps:
+1. Test chapter number extraction with real filenames
+2. Verify ComicInfo.xml parsing
+3. Test special series naming patterns
+4. Create dummy data to verify each scenario
+
+### Raid Manga Chapter Number Fix (2024-03-13)
+- Issue: Raid manga chapters with decimal numbers (e.g., Chapter 0.2) were displaying incorrectly as "Chapter 00"
+- Root Cause: The series needed special handling for its unique chapter numbering pattern
+- Fix 1: Added Raid as a special case in LibraryScanner.cs
+- Fix 2: Implemented specific regex patterns to handle decimal chapter numbers:
+  * Priority 1: Decimal numbers less than 1 (e.g., 0.2)
+  * Priority 2: Other decimal numbers (e.g., 1.5)
+  * Priority 3: Regular chapter numbers
+  * Priority 4: Fallback to any number in filename
+- Fix 3: Added extensive logging to track chapter number extraction
+- This ensures proper handling of Raid manga's decimal chapter numbers while maintaining compatibility with other series
+
+### LogWindow Null Reference Exception Fix (2024-03-13)
+- Issue: LogWindow was throwing NullReferenceException when changing log levels
+- Root Cause: Multiple potential null reference points in the LogLevelFilter_SelectionChanged method:
+  1. LogLevelFilter could be null
+  2. SelectedItem could be null
+  3. _logView could become null
+  4. Content property could be null
+- Fix 1: Added null checks in LogLevelFilter_SelectionChanged method:
+  * Added null-conditional operator for LogLevelFilter?.SelectedItem
+  * Added explicit check for _logView != null
+  * Added null-conditional operator for item.Content?.ToString()
+- Fix 2: Updated LogWindow constructor to:
+  * Add explicit check for _logView initialization
+  * Throw InvalidOperationException if _logView creation fails
+  * Set LogList.ItemsSource directly to _logEntries for more reliable binding
+- Fix 3: Added defensive programming throughout the LogWindow class
+- These changes ensure the LogWindow handles null cases gracefully and maintains proper initialization of critical components
+
+## SYSTEM ARCHITECTURE INSIGHTS
+
+### Logging System Architecture (2024-03-14)
+- Core Components:
+  1. Logger (MangaAssistant.Common.Logging)
+     * Static class that serves as the central logging facility
+     * Maintains in-memory log storage with event notification
+     * Handles log level filtering and categorization
+     * Thread-safe implementation for concurrent access
+  
+  2. LogWindow (MangaAssistant.WPF.Controls)
+     * WPF window for displaying and filtering logs
+     * Uses MVVM pattern with ObservableCollection<LogEntry>
+     * Implements throttled updates via DispatcherTimer
+     * Maintains separate UI and data threads for responsiveness
+  
+  3. LogEntry Model
+     * Contains log metadata: Level, Timestamp, Message, Category
+     * Supports context and tags for detailed debugging
+     * Structured for efficient filtering and display
+
+- Component Interactions:
+  1. Logger → LogWindow:
+     * LogAdded event notifies window of new entries
+     * Batch processing through _pendingLogs queue
+     * Thread-safe updates using _logLock
+  
+  2. LogWindow → Logger:
+     * Retrieves initial logs via GetLogsAsync()
+     * Clears logs through ClearLogs()
+     * Maintains log level and category filters
+  
+  3. UI Thread Management:
+     * DispatcherTimer handles UI updates (100ms interval)
+     * Lock-free read operations for smooth scrolling
+     * Background priority for non-critical updates
+
+### Critical Dependencies and Initialization (2024-03-14)
+- Component Initialization Order:
+  1. Logger static initialization
+  2. LogWindow constructor
+  3. UI element initialization
+  4. Event handler registration
+  5. Initial log loading
+
+- Key Dependencies:
+  1. CollectionViewSource for filtered log display
+  2. DispatcherTimer for throttled updates
+  3. ObservableCollection for UI binding
+  4. WPF data binding infrastructure
+
+- Failure Points and Mitigations:
+  1. Logger Initialization:
+     * Must complete before any logging calls
+     * Handles static constructor failures gracefully
+     * Provides fallback to debug output on failure
+  
+  2. LogWindow Creation:
+     * Verifies _logView initialization
+     * Handles null owner window
+     * Maintains window state on errors
+  
+  3. Event Handler Registration:
+     * Proper cleanup on window closing
+     * Handles unsubscribe in disposed state
+     * Prevents memory leaks from event handlers
+
+### Performance Considerations (2024-03-14)
+- Memory Management:
+  1. Log Entry Storage:
+     * In-memory queue with 5000 entry limit
+     * Oldest entries removed automatically
+     * Batch processing to reduce memory pressure
+  
+  2. UI Updates:
+     * Throttled to 100ms intervals
+     * Background priority dispatcher operations
+     * Virtualized list view for large log sets
+  
+  3. Filter Operations:
+     * Cached filter results where possible
+     * Efficient string comparisons
+     * Category lookup optimization
+
+- Threading Model:
+  1. Logger Operations:
+     * Thread-safe log addition
+     * Non-blocking read operations
+     * Minimal lock contention
+  
+  2. UI Updates:
+     * Dispatcher queue management
+     * Background priority for filters
+     * Smooth scrolling implementation
+
+### Troubleshooting Guide (2024-03-14)
+- Common Issues and Solutions:
+  1. Null Reference Exceptions:
+     * Check LogWindow initialization order
+     * Verify _logView creation
+     * Ensure proper event handler cleanup
+  
+  2. UI Unresponsiveness:
+     * Monitor DispatcherTimer frequency
+     * Check filter operation complexity
+     * Verify virtualization settings
+  
+  3. Memory Leaks:
+     * Watch for uncleaned event handlers
+     * Monitor _pendingLogs queue size
+     * Check for retained window references
+
+- Debugging Approaches:
+  1. UI Thread Issues:
+     * Use Dispatcher.VerifyAccess()
+     * Check thread ID in log calls
+     * Monitor UI update frequency
+  
+  2. Memory Issues:
+     * Profile log entry retention
+     * Monitor collection sizes
+     * Track event handler references
+  
+  3. Performance Issues:
+     * Log filter execution times
+     * Monitor batch processing
+     * Profile UI update cycles
+
+### Integration Points (2024-03-14)
+- LibraryScanner Integration:
+  * Uses category "LibraryScanner"
+  * Logs scan progress and file operations
+  * Provides detailed context for debugging
+
+- MainWindow Integration:
+  * Manages LogWindow lifecycle
+  * Handles log viewer navigation
+  * Coordinates UI updates
+
+- Settings Integration:
+  * Log level configuration
+  * Log retention policies
+  * UI update frequency settings
+
 ## KNOWN ISSUES AND LIMITATIONS
 
 ### File Locking
@@ -196,3 +443,43 @@ The application follows a clean architecture pattern with the following layers:
 - Verify file paths are correct and accessible
 - Check if the PathToImageSourceConverter is handling exceptions properly
 - Ensure the cache is being cleared when needed
+
+Event Args Refactoring (2024-03-09):
+- Issue: Duplicate definitions of ChapterActionRequestedEventArgs and ChapterActionRequestedEventHandler in multiple files.
+- Root Cause: Event args and handlers were defined in both DirectChapterDisplay.xaml.cs and ChapterCard.xaml.cs.
+- Fix: 
+  1. Created a shared Events folder in MangaAssistant.WPF.Controls.
+  2. Moved event args and handler definitions to ChapterActionRequestedEventArgs.cs.
+  3. Updated DirectChapterDisplay.xaml.cs to use the shared definitions.
+  4. Added 'new' keyword to Source property to explicitly indicate hiding base class member.
+  5. This change improves code maintainability and reduces duplication.
+
+### Logging Best Practices (2024-03-14)
+- Established unified logging system with single source of truth
+- Key Principles:
+  1. All logs must be viewable through the "View Logs" page
+  2. Use appropriate log levels:
+     * DEBUG - Detailed information for debugging
+     * INFO - General operational information
+     * WARNING - Issues that don't affect core functionality
+     * ERROR - Serious issues that affect functionality
+     * CRITICAL - Application-breaking issues
+  3. Include relevant context:
+     * Category - Component/module generating the log
+     * Context - Additional information (e.g., file paths)
+     * Tags - Key-value pairs for filtering and debugging
+  4. Structured logging format:
+     * Clear, concise messages
+     * Relevant metadata in tags
+     * Consistent naming conventions
+  5. Performance considerations:
+     * Batch processing for UI updates
+     * Memory management for log storage
+     * Efficient filtering mechanisms
+
+Implementation Notes:
+- Use Logger.Log() for all logging needs
+- Avoid direct Debug.WriteLine() calls
+- Include appropriate context and tags
+- Monitor log performance impact
+- Regular log cleanup for memory management

@@ -1,4 +1,6 @@
 using System;
+using System.Diagnostics;
+using System.IO;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -10,7 +12,6 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using MangaAssistant.WPF.Controls;
-using MangaAssistant.Infrastructure.Services;
 using MangaAssistant.WPF.ViewModels;
 using MangaAssistant.WPF.Controls.ViewModels;
 using MangaAssistant.Core.Models;
@@ -24,8 +25,8 @@ namespace MangaAssistant.WPF;
 /// </summary>
 public partial class MainWindow : Window
 {
-    private readonly SettingsPage _settingsPage;
     private readonly SeriesPage _seriesPage;
+    private readonly SettingsPage _settingsPage;
 
     public MainWindow()
     {
@@ -69,9 +70,6 @@ public partial class MainWindow : Window
         LibraryView.Visibility = Visibility.Visible;
         SeriesDetailContainer.Visibility = Visibility.Collapsed;
         SettingsContainer.Visibility = Visibility.Collapsed;
-        
-        // Refresh the covers in the library view
-        RefreshLibraryCoverImages();
     }
 
     private void Settings_Click(object sender, RoutedEventArgs e)
@@ -90,72 +88,25 @@ public partial class MainWindow : Window
             LibraryView.Visibility = Visibility.Collapsed;
             SettingsContainer.Visibility = Visibility.Collapsed;
             SeriesDetailContainer.Visibility = Visibility.Visible;
-            // Removed UpdateLayout call that was causing binding errors
         }
     }
 
-    /// <summary>
-    /// Refreshes the cover images in the library view by clearing the image cache
-    /// and forcing the PathToImageSourceConverter to reload the images.
-    /// </summary>
-    private void RefreshLibraryCoverImages()
+    private void MangaCard_MetadataUpdateRequested(object sender, RoutedEventArgs e)
     {
-        // Get the ItemsControl that displays the manga cards
-        if (LibraryView.Content is ItemsControl itemsControl)
+        if (sender is MangaCard card && 
+            card.DataContext is Series series)
         {
-            // Force a refresh of the UI
-            Application.Current.Dispatcher.Invoke(() =>
-            {
-                // Clear the PathToImageSourceConverter cache
-                if (Resources["PathToImageSourceConverter"] is MangaAssistant.WPF.Converters.PathToImageSourceConverter converter)
-                {
-                    converter.ClearCache();
-                }
-                
-                // Refresh the binding on each MangaCard
-                foreach (var item in itemsControl.Items)
-                {
-                    if (itemsControl.ItemContainerGenerator.ContainerFromItem(item) is FrameworkElement container)
-                    {
-                        // Find the MangaCard within the container
-                        var mangaCard = FindVisualChild<MangaCard>(container);
-                        if (mangaCard != null)
-                        {
-                            // Force the CoverSource binding to update
-                            BindingExpression binding = mangaCard.GetBindingExpression(MangaCard.CoverSourceProperty);
-                            if (binding != null)
-                            {
-                                binding.UpdateTarget();
-                            }
-                        }
-                    }
-                }
-            });
-        }
-    }
-
-    /// <summary>
-    /// Helper method to find a visual child of a specific type within a parent element.
-    /// </summary>
-    private static T FindVisualChild<T>(DependencyObject parent) where T : DependencyObject
-    {
-        for (int i = 0; i < VisualTreeHelper.GetChildrenCount(parent); i++)
-        {
-            DependencyObject child = VisualTreeHelper.GetChild(parent, i);
+            // First load the series in the series page
+            _seriesPage.LoadSeries(series);
             
-            if (child is T typedChild)
-            {
-                return typedChild;
-            }
+            // Then programmatically trigger the search metadata functionality
+            _seriesPage.SearchMetadata();
             
-            T childOfChild = FindVisualChild<T>(child);
-            if (childOfChild != null)
-            {
-                return childOfChild;
-            }
+            // Make the series page visible
+            LibraryView.Visibility = Visibility.Collapsed;
+            SettingsContainer.Visibility = Visibility.Collapsed;
+            SeriesDetailContainer.Visibility = Visibility.Visible;
         }
-        
-        return null;
     }
 
     private void SearchBox_KeyDown(object sender, KeyEventArgs e)
@@ -170,16 +121,6 @@ public partial class MainWindow : Window
                 
                 // Log the search attempt
                 Console.WriteLine($"Searching for: {searchQuery}");
-                
-                // Special handling for known problematic queries
-                if (string.Equals(searchQuery, "GUL", StringComparison.OrdinalIgnoreCase))
-                {
-                    Application.Current.Dispatcher.Invoke(() => {
-                        MessageBox.Show($"The search term '{searchQuery}' is known to cause issues. Please try a different search term.", 
-                            "Search Limitation", MessageBoxButton.OK, MessageBoxImage.Information);
-                    });
-                    return;
-                }
                 
                 // Filter the series collection based on the search query
                 // This is done on the UI thread to ensure thread safety

@@ -200,7 +200,9 @@
                                     Progress="{Binding Progress}"
                                     CoverSource="{Binding CoverPath, Converter={StaticResource PathToImageSourceConverter}}"
                                     UnreadChapters="{Binding ChapterCount}"
-                                    SeriesClicked="MangaCard_SeriesClicked"/>
+                                    SeriesFolderPath="{Binding FolderPath, Mode=OneWay}"
+                                    SeriesClicked="MangaCard_SeriesClicked"
+                                    MetadataUpdateRequested="MangaCard_MetadataUpdateRequested"/>
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>

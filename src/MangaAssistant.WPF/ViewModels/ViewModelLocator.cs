@@ -7,10 +7,25 @@ namespace MangaAssistant.WPF.ViewModels
 {
     public class ViewModelLocator
     {
-        private static readonly Lazy<MainViewModel> _mainViewModel = new Lazy<MainViewModel>(() => new MainViewModel(_libraryService, _settingsService, _metadataService));
-        private static ILibraryService _libraryService;
-        private static ISettingsService _settingsService;
-        private static IMetadataService _metadataService;
+        private static readonly Lazy<MainViewModel> _mainViewModel;
+        private static ILibraryService? _libraryService;
+        private static ISettingsService? _settingsService;
+        private static IMetadataService? _metadataService;
+        
+        static ViewModelLocator()
+        {
+            _mainViewModel = new Lazy<MainViewModel>(() =>
+            {
+                if (_libraryService == null)
+                    throw new InvalidOperationException("LibraryService not registered. Call RegisterServices first.");
+                if (_settingsService == null)
+                    throw new InvalidOperationException("SettingsService not registered. Call RegisterServices first.");
+                if (_metadataService == null)
+                    throw new InvalidOperationException("MetadataService not registered. Call RegisterServices first.");
+                    
+                return new MainViewModel(_libraryService, _settingsService, _metadataService);
+            });
+        }
         
         public static MainViewModel MainViewModel => _mainViewModel.Value;
         

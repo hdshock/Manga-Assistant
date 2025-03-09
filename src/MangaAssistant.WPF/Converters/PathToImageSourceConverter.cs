@@ -33,7 +33,7 @@ namespace MangaAssistant.WPF.Converters
                     }
 
                     // Check if the image is already in the cache
-                    if (_imageCache.TryGetValue(path, out ImageSource cachedImage))
+                    if (_imageCache.TryGetValue(path, out var cachedImage) && cachedImage != null)
                     {
                         return cachedImage;
                     }

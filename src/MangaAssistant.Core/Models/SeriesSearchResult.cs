@@ -12,5 +12,6 @@ namespace MangaAssistant.Core.Models
         public int ChapterCount { get; set; }
         public int VolumeCount { get; set; }
         public int? ReleaseYear { get; set; }
+        public string ProviderName { get; set; } = string.Empty;
     }
 } 

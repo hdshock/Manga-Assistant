@@ -531,3 +531,46 @@ Implementation Notes:
 - Test main functionality after builds
 
 Remember to update these notes as new patterns or issues are discovered.
+
+### ComicInfo.xml Handling Improvements (2024-03-14)
+- Issue: XML parsing was failing for some ComicInfo.xml files despite valid content
+- Root Cause Analysis:
+  1. Namespace handling wasn't flexible enough
+  2. Some files had invalid characters or encoding issues
+  3. Partial metadata wasn't being handled gracefully
+
+- Fixes Implemented:
+  1. Enhanced XML Parsing:
+     * Added flexible namespace handling
+     * Improved invalid character removal
+     * Added BOM detection and removal
+     * Enhanced whitespace normalization
+     * Added fallback parsing for malformed XML
+
+  2. Metadata Model Updates:
+     * Added support for all Kavita-compatible fields
+     * Implemented proper YesNo enum for Manga field
+     * Added LocalizedSeries and SeriesSort support
+     * Enhanced language code handling
+
+  3. Data Normalization:
+     * Improved chapter number parsing (including decimals)
+     * Enhanced volume number cleaning
+     * Added genre splitting and normalization
+     * Implemented proper language code standardization
+
+  4. Error Handling:
+     * Added graceful fallback for partial metadata
+     * Improved logging for XML parsing issues
+     * Added regex-based fallback parsing for critical fields
+
+- Compatibility Notes:
+  * Fully compatible with Kavita's metadata expectations
+  * Maintains compatibility with Komga
+  * Handles metadata from various sources (ComicRack, etc.)
+
+- Testing Results:
+  * Successfully parses files with missing series information
+  * Correctly handles decimal chapter numbers
+  * Properly manages XML encoding issues
+  * Maintains data consistency with Kavita

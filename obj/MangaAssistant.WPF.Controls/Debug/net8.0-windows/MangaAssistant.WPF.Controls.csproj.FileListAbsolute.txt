@@ -50,3 +50,9 @@ C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\obj\MangaAssistant.WPF.C
 C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\obj\MangaAssistant.WPF.Controls\Debug\net8.0-windows\refint\MangaAssistant.WPF.Controls.dll
 C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\obj\MangaAssistant.WPF.Controls\Debug\net8.0-windows\MangaAssistant.WPF.Controls.pdb
 C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\obj\MangaAssistant.WPF.Controls\Debug\net8.0-windows\ref\MangaAssistant.WPF.Controls.dll
+C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\obj\MangaAssistant.WPF.Controls\Debug\net8.0-windows\ChapterContextMenu.baml
+C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\obj\MangaAssistant.WPF.Controls\Debug\net8.0-windows\ChapterContextMenu.g.cs
+C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\obj\MangaAssistant.WPF.Controls\Debug\net8.0-windows\ChapterList.g.cs
+C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\obj\MangaAssistant.WPF.Controls\Debug\net8.0-windows\ChapterCard.g.cs
+C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\obj\MangaAssistant.WPF.Controls\Debug\net8.0-windows\ChapterCard.baml
+C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\obj\MangaAssistant.WPF.Controls\Debug\net8.0-windows\ChapterList.baml

@@ -3,6 +3,10 @@
   "WorkspaceRootPath": "C:\\Users\\jason.mesisco\\Documents\\GitHub\\Manga-Assistant\\",
   "Documents": [
     {
+      "AbsoluteMoniker": "D:0:0:{9A83BC1F-42FE-4AFD-937D-EA7735AFFDB8}|src\\MangaAssistant.WPF.Controls\\MangaAssistant.WPF.Controls.csproj|c:\\users\\jason.mesisco\\documents\\github\\manga-assistant\\src\\mangaassistant.wpf.controls\\metadatasearchdialog.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}",
+      "RelativeMoniker": "D:0:0:{9A83BC1F-42FE-4AFD-937D-EA7735AFFDB8}|src\\MangaAssistant.WPF.Controls\\MangaAssistant.WPF.Controls.csproj|solutionrelative:src\\mangaassistant.wpf.controls\\metadatasearchdialog.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}"
+    },
+    {
       "AbsoluteMoniker": "D:0:0:{74E45B03-2E93-4A25-95F1-B8316DB94A58}|src\\MangaAssistant.WPF\\MangaAssistant.WPF.csproj|c:\\users\\jason.mesisco\\documents\\github\\manga-assistant\\src\\mangaassistant.wpf\\mangaassistant.wpf.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|",
       "RelativeMoniker": "D:0:0:{74E45B03-2E93-4A25-95F1-B8316DB94A58}|src\\MangaAssistant.WPF\\MangaAssistant.WPF.csproj|solutionrelative:src\\mangaassistant.wpf\\mangaassistant.wpf.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
     },
@@ -21,7 +25,7 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 2,
+          "SelectedChildIndex": 1,
           "Children": [
             {
               "$type": "Bookmark",
@@ -29,19 +33,30 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 0,
+              "Title": "MetadataSearchDialog.xaml",
+              "DocumentMoniker": "C:\\Users\\jason.mesisco\\Documents\\GitHub\\Manga-Assistant\\src\\MangaAssistant.WPF.Controls\\MetadataSearchDialog.xaml",
+              "RelativeDocumentMoniker": "src\\MangaAssistant.WPF.Controls\\MetadataSearchDialog.xaml",
+              "ToolTip": "C:\\Users\\jason.mesisco\\Documents\\GitHub\\Manga-Assistant\\src\\MangaAssistant.WPF.Controls\\MetadataSearchDialog.xaml",
+              "RelativeToolTip": "src\\MangaAssistant.WPF.Controls\\MetadataSearchDialog.xaml",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003549|",
+              "WhenOpened": "2025-03-08T16:00:22.356Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
               "Title": "XamlReader.cs",
               "DocumentMoniker": "C:\\Users\\jason.mesisco\\AppData\\Local\\Temp\\.vsdbgsrc\\0a84cc53936b314ba955b54f50bf4796d8234943f3fd7b93873381b45d404026\\XamlReader.cs",
               "RelativeDocumentMoniker": "..\\..\\..\\AppData\\Local\\Temp\\.vsdbgsrc\\0a84cc53936b314ba955b54f50bf4796d8234943f3fd7b93873381b45d404026\\XamlReader.cs",
               "ToolTip": "C:\\Users\\jason.mesisco\\AppData\\Local\\Temp\\.vsdbgsrc\\0a84cc53936b314ba955b54f50bf4796d8234943f3fd7b93873381b45d404026\\XamlReader.cs",
               "RelativeToolTip": "..\\..\\..\\AppData\\Local\\Temp\\.vsdbgsrc\\0a84cc53936b314ba955b54f50bf4796d8234943f3fd7b93873381b45d404026\\XamlReader.cs",
-              "ViewState": "AgIAAK8BAAAAAAAAAAAswMYBAAAZAAAAAQAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-03-06T15:23:06.127Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 0,
+              "DocumentIndex": 1,
               "Title": "MangaAssistant.WPF.csproj",
               "DocumentMoniker": "C:\\Users\\jason.mesisco\\Documents\\GitHub\\Manga-Assistant\\src\\MangaAssistant.WPF\\MangaAssistant.WPF.csproj",
               "RelativeDocumentMoniker": "src\\MangaAssistant.WPF\\MangaAssistant.WPF.csproj",
@@ -54,7 +69,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 2,
+              "DocumentIndex": 3,
               "Title": "App.xaml.cs",
               "DocumentMoniker": "C:\\Users\\jason.mesisco\\Documents\\GitHub\\Manga-Assistant\\src\\MangaAssistant.WPF\\App.xaml.cs",
               "RelativeDocumentMoniker": "src\\MangaAssistant.WPF\\App.xaml.cs",

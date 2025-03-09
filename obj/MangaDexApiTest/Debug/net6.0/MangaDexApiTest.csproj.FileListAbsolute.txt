@@ -1,0 +1,5 @@
+C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\obj\MangaDexApiTest\Debug\net6.0\MangaDexApiTest.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\obj\MangaDexApiTest\Debug\net6.0\MangaDexApiTest.AssemblyInfoInputs.cache
+C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\obj\MangaDexApiTest\Debug\net6.0\MangaDexApiTest.AssemblyInfo.cs
+C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\obj\MangaDexApiTest\Debug\net6.0\MangaDexApiTest.csproj.CoreCompileInputs.cache
+C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\obj\MangaDexApiTest\Debug\net6.0\MangaDexApiTest.sourcelink.json

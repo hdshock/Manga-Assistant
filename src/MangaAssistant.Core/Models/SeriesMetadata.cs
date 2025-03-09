@@ -27,6 +27,9 @@ namespace MangaAssistant.Core.Models
         [JsonPropertyName("volumes")]
         public int? Volumes { get; set; }
 
+        [JsonPropertyName("hasVolumes")]
+        public bool HasVolumes { get; set; }
+
         [JsonPropertyName("status")]
         public string Status { get; set; } = string.Empty;
 

@@ -1,0 +1,17 @@
+C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\obj\MangaAssistant.Tests\Debug\net8.0-windows\MangaAssistant.Tests.csproj.AssemblyReference.cache
+C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\obj\MangaAssistant.Tests\Debug\net8.0-windows\MangaAssistant.Tests.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\obj\MangaAssistant.Tests\Debug\net8.0-windows\MangaAssistant.Tests.AssemblyInfoInputs.cache
+C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\obj\MangaAssistant.Tests\Debug\net8.0-windows\MangaAssistant.Tests.AssemblyInfo.cs
+C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\obj\MangaAssistant.Tests\Debug\net8.0-windows\MangaAssistant.Tests.csproj.CoreCompileInputs.cache
+C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\obj\MangaAssistant.Tests\Debug\net8.0-windows\MangaAssistant.Tests.sourcelink.json
+C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\bin\MangaAssistant.Tests\Debug\net8.0-windows\MangaAssistant.Tests.exe
+C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\bin\MangaAssistant.Tests\Debug\net8.0-windows\MangaAssistant.Tests.deps.json
+C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\bin\MangaAssistant.Tests\Debug\net8.0-windows\MangaAssistant.Tests.runtimeconfig.json
+C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\bin\MangaAssistant.Tests\Debug\net8.0-windows\MangaAssistant.Tests.dll
+C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\bin\MangaAssistant.Tests\Debug\net8.0-windows\MangaAssistant.Tests.pdb
+C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\obj\MangaAssistant.Tests\Debug\net8.0-windows\MangaAss.366A4976.Up2Date
+C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\obj\MangaAssistant.Tests\Debug\net8.0-windows\MangaAssistant.Tests.dll
+C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\obj\MangaAssistant.Tests\Debug\net8.0-windows\refint\MangaAssistant.Tests.dll
+C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\obj\MangaAssistant.Tests\Debug\net8.0-windows\MangaAssistant.Tests.pdb
+C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\obj\MangaAssistant.Tests\Debug\net8.0-windows\MangaAssistant.Tests.genruntimeconfig.cache
+C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\obj\MangaAssistant.Tests\Debug\net8.0-windows\ref\MangaAssistant.Tests.dll

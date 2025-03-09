@@ -2,9 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
 using System.Threading.Tasks;
+using MangaAssistant.Core.Interfaces;
 using MangaAssistant.Core.Models;
 using MangaAssistant.Core.Services;
+using MangaAssistant.Common.Logging;
+using MangaAssistant.Infrastructure.Logging;
 using MangaAssistant.Infrastructure.Services.Metadata;
 using System.Diagnostics;
 
@@ -12,28 +16,175 @@ namespace MangaAssistant.Infrastructure.Services
 {
     public class MetadataService : IMetadataService
     {
-        private readonly List<IMetadataProvider> _providers;
+        private readonly List<Core.Services.IMetadataProvider> _providers;
         public ILibraryService LibraryService { get; }
 
-        public IReadOnlyList<IMetadataProvider> Providers => _providers.AsReadOnly();
+        public IReadOnlyList<Core.Services.IMetadataProvider> Providers => _providers.AsReadOnly();
 
         public MetadataService(ILibraryService libraryService)
         {
             LibraryService = libraryService ?? throw new ArgumentNullException(nameof(libraryService));
-            _providers = new List<IMetadataProvider>
+            
+            // Create a logger adapter and HTTP client for providers
+            var logger = new MangaAssistant.Infrastructure.Logging.LoggerAdapter();
+            var httpClient = new HttpClient();
+            
+            // Configure HttpClient with appropriate headers and timeout
+            httpClient.Timeout = TimeSpan.FromSeconds(30);
+            
+            _providers = new List<Core.Services.IMetadataProvider>
             {
-                new AniListMetadataProvider()
+                new AniListMetadataProvider(),
+                new MangaDexMetadataProvider(),
+                new MangaUpdatesMetadataProvider(httpClient, logger)
             };
-            // TODO: Add metadata providers
+            
+            Debug.WriteLine($"MetadataService initialized with {_providers.Count} providers:");
+            foreach (var provider in _providers)
+            {
+                Debug.WriteLine($"- {provider.Name}");
+            }
         }
 
         public async Task<IEnumerable<SeriesSearchResult>> SearchAsync(string providerName, string query)
         {
-            var provider = _providers.FirstOrDefault(p => p.Name.Equals(providerName, StringComparison.OrdinalIgnoreCase));
+            Debug.WriteLine($"MetadataService.SearchAsync called with provider: '{providerName}', query: '{query}'");
+            Debug.WriteLine($"Available providers: {string.Join(", ", _providers.Select(p => p.Name))}");
+            
+            var provider = _providers.FirstOrDefault(p => 
+                string.Equals(p.Name, providerName, StringComparison.OrdinalIgnoreCase));
+                
             if (provider == null)
-                return new List<SeriesSearchResult>();
+            {
+                Debug.WriteLine($"Provider not found: {providerName}");
+                return Enumerable.Empty<SeriesSearchResult>();
+            }
 
-            return await provider.SearchAsync(query);
+            Debug.WriteLine($"Using provider: {provider.Name}");
+            
+            try
+            {
+                var results = await provider.SearchAsync(query);
+                Debug.WriteLine($"Search completed with {results?.Count() ?? 0} results");
+                return results ?? Enumerable.Empty<SeriesSearchResult>();
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error in SearchAsync: {ex.Message}");
+                Debug.WriteLine($"Stack trace: {ex.StackTrace}");
+                return Enumerable.Empty<SeriesSearchResult>();
+            }
+        }
+
+        public async Task<SeriesMetadata> GetMetadataAsync(string providerName, string providerId)
+        {
+            Debug.WriteLine($"MetadataService.GetMetadataAsync called with provider: '{providerName}', id: '{providerId}'");
+            
+            var provider = _providers.FirstOrDefault(p => 
+                string.Equals(p.Name, providerName, StringComparison.OrdinalIgnoreCase));
+                
+            if (provider == null)
+            {
+                Debug.WriteLine($"Provider not found: {providerName}");
+                return new SeriesMetadata();
+            }
+
+            Debug.WriteLine($"Using provider: {provider.Name}");
+            
+            try
+            {
+                var metadata = await provider.GetMetadataAsync(providerId);
+                Debug.WriteLine($"Metadata retrieval completed: {(metadata != null ? "Success" : "Failed")}");
+                return metadata;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error in GetMetadataAsync: {ex.Message}");
+                Debug.WriteLine($"Stack trace: {ex.StackTrace}");
+                return new SeriesMetadata();
+            }
+        }
+
+        public async Task<byte[]?> DownloadCoverImageAsync(string url)
+        {
+            if (string.IsNullOrWhiteSpace(url))
+            {
+                Debug.WriteLine("DownloadCoverImageAsync: URL is empty");
+                return null;
+            }
+
+            Debug.WriteLine($"Downloading cover image from: {url}");
+            
+            try
+            {
+                using var httpClient = new HttpClient();
+                httpClient.Timeout = TimeSpan.FromSeconds(30);
+                
+                var response = await httpClient.GetAsync(url);
+                response.EnsureSuccessStatusCode();
+                
+                var imageData = await response.Content.ReadAsByteArrayAsync();
+                Debug.WriteLine($"Downloaded image: {imageData.Length} bytes");
+                
+                return imageData;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error downloading cover image: {ex.Message}");
+                return null;
+            }
+        }
+
+        public async Task<bool> SaveMetadataAsync(SeriesMetadata metadata, string seriesFolder)
+        {
+            if (metadata == null)
+            {
+                Debug.WriteLine("SaveMetadataAsync: Metadata is null");
+                return false;
+            }
+
+            Debug.WriteLine($"Saving metadata for series: {metadata.Series}");
+            
+            try
+            {
+                // Save cover image if available
+                if (!string.IsNullOrWhiteSpace(metadata.CoverPath) && metadata.CoverPath.StartsWith("http"))
+                {
+                    var imageData = await DownloadCoverImageAsync(metadata.CoverPath);
+                    if (imageData != null)
+                    {
+                        var coverPath = Path.Combine(seriesFolder, "cover.jpg");
+                        await File.WriteAllBytesAsync(coverPath, imageData);
+                        metadata.CoverPath = coverPath;
+                    }
+                }
+                
+                // Set HasVolumes flag based on volume count
+                if (metadata.Volumes.HasValue && metadata.Volumes.Value > 0)
+                {
+                    metadata.HasVolumes = true;
+                    Logger.Log($"Series has {metadata.Volumes.Value} volumes", Common.Logging.LogLevel.Info);
+                }
+                
+                // Create a temporary Series object to save the metadata
+                var series = new Series
+                {
+                    FolderPath = seriesFolder,
+                    Metadata = metadata
+                };
+                
+                // Update the library with the new metadata
+                await LibraryService.SaveSeriesMetadataAsync(series);
+                
+                Debug.WriteLine($"Metadata saved successfully for: {metadata.Series}");
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error saving metadata: {ex.Message}");
+                Debug.WriteLine($"Stack trace: {ex.StackTrace}");
+                return false;
+            }
         }
 
         public async Task UpdateSeriesMetadataAsync(Series series, string providerName, string providerId)
@@ -82,4 +233,4 @@ namespace MangaAssistant.Infrastructure.Services
             }
         }
     }
-} 
+}

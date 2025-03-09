@@ -1,0 +1,13 @@
+{
+  "version": 2,
+  "dgSpecHash": "cJL0/CF6YOs=",
+  "success": true,
+  "projectFilePath": "C:\\Users\\jason.mesisco\\Documents\\GitHub\\Manga-Assistant\\MangaDexApiTest\\MangaDexApiTest.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\jason.mesisco\\.nuget\\packages\\microsoft.netcore.app.ref\\6.0.36\\microsoft.netcore.app.ref.6.0.36.nupkg.sha512",
+    "C:\\Users\\jason.mesisco\\.nuget\\packages\\microsoft.windowsdesktop.app.ref\\6.0.36\\microsoft.windowsdesktop.app.ref.6.0.36.nupkg.sha512",
+    "C:\\Users\\jason.mesisco\\.nuget\\packages\\microsoft.aspnetcore.app.ref\\6.0.36\\microsoft.aspnetcore.app.ref.6.0.36.nupkg.sha512",
+    "C:\\Users\\jason.mesisco\\.nuget\\packages\\microsoft.netcore.app.host.win-x64\\6.0.36\\microsoft.netcore.app.host.win-x64.6.0.36.nupkg.sha512"
+  ],
+  "logs": []
+}

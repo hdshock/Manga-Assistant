@@ -2,6 +2,16 @@
   "version": 3,
   "targets": {
     "net8.0-windows7.0": {
+      "MangaAssistant.Common/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v8.0",
+        "compile": {
+          "bin/placeholder/MangaAssistant.Common.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/MangaAssistant.Common.dll": {}
+        }
+      },
       "MangaAssistant.Core/1.0.0": {
         "type": "project",
         "framework": ".NETCoreApp,Version=v8.0",
@@ -18,6 +28,11 @@
     }
   },
   "libraries": {
+    "MangaAssistant.Common/1.0.0": {
+      "type": "project",
+      "path": "../MangaAssistant.Common/MangaAssistant.Common.csproj",
+      "msbuildProject": "../MangaAssistant.Common/MangaAssistant.Common.csproj"
+    },
     "MangaAssistant.Core/1.0.0": {
       "type": "project",
       "path": "../MangaAssistant.Core/MangaAssistant.Core.csproj",
@@ -26,6 +41,7 @@
   },
   "projectFileDependencyGroups": {
     "net8.0-windows7.0": [
+      "MangaAssistant.Common >= 1.0.0",
       "MangaAssistant.Core >= 1.0.0"
     ]
   },
@@ -61,6 +77,9 @@
         "net8.0-windows7.0": {
           "targetAlias": "net8.0-windows",
           "projectReferences": {
+            "C:\\Users\\jason.mesisco\\Documents\\GitHub\\Manga-Assistant\\src\\MangaAssistant.Common\\MangaAssistant.Common.csproj": {
+              "projectPath": "C:\\Users\\jason.mesisco\\Documents\\GitHub\\Manga-Assistant\\src\\MangaAssistant.Common\\MangaAssistant.Common.csproj"
+            },
             "C:\\Users\\jason.mesisco\\Documents\\GitHub\\Manga-Assistant\\src\\MangaAssistant.Core\\MangaAssistant.Core.csproj": {
               "projectPath": "C:\\Users\\jason.mesisco\\Documents\\GitHub\\Manga-Assistant\\src\\MangaAssistant.Core\\MangaAssistant.Core.csproj"
             }

@@ -221,11 +221,18 @@ namespace MangaAssistant.Infrastructure.Services
                 var coverImages = FindCoverImages(directoryPath);
                 Debug.WriteLine($"Found {coverImages.Length} cover images for {seriesName}");
 
+                // Determine the series title based on priority:
+                // 1. Metadata file in the series folder
+                // 2. Series title from CBZ files in the folder
+                // 3. Folder name if no other titles are available
+                string seriesTitle = await DetermineSeriesTitleAsync(directoryPath, cbzFiles, existingMetadata, seriesName);
+                Debug.WriteLine($"Determined series title: {seriesTitle}");
+
                 // Create series object with basic info
                 var series = new Series
                 {
                     Id = Guid.NewGuid(),
-                    Title = existingMetadata?.Series ?? seriesName,
+                    Title = seriesTitle,
                     FolderPath = directoryPath,
                     Created = existingMetadata?.Created ?? directoryInfo.CreationTime,
                     LastModified = directoryInfo.LastWriteTime,
@@ -297,6 +304,40 @@ namespace MangaAssistant.Infrastructure.Services
                 Debug.WriteLine($"Error scanning directory {directoryPath}: {ex.Message}");
                 return null;
             }
+        }
+
+        // Helper method to determine the series title based on priority
+        private async Task<string> DetermineSeriesTitleAsync(string directoryPath, string[] cbzFiles, SeriesMetadata? metadata, string folderName)
+        {
+            // Priority 1: Use metadata file if it exists and has a series name
+            if (metadata != null && !string.IsNullOrWhiteSpace(metadata.Series))
+            {
+                Debug.WriteLine($"Using series title from metadata file: {metadata.Series}");
+                return metadata.Series;
+            }
+
+            // Priority 2: Look for series title in CBZ files' ComicInfo.xml
+            foreach (var cbzFile in cbzFiles)
+            {
+                try
+                {
+                    var comicInfo = await ExtractComicInfoAsync(cbzFile);
+                    if (comicInfo != null && !string.IsNullOrWhiteSpace(comicInfo.Series))
+                    {
+                        Debug.WriteLine($"Using series title from CBZ ComicInfo: {comicInfo.Series}");
+                        return comicInfo.Series;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"Error extracting ComicInfo from {cbzFile}: {ex.Message}");
+                    // Continue to the next file if there's an error
+                }
+            }
+
+            // Priority 3: Use folder name as a last resort
+            Debug.WriteLine($"Using folder name as series title: {folderName}");
+            return folderName;
         }
 
         public async Task SaveSeriesMetadataAsync(Series series)

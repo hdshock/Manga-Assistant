@@ -197,6 +197,9 @@ namespace MangaAssistant.WPF.ViewModels
                                 ScanProgress = 100;
                                 CurrentScanningSeries = string.Empty;
                                 Debug.WriteLine($"Final series count: {Series.Count}");
+                                
+                                // Refresh cover images after scan completes
+                                RefreshCoverImages();
                             }, DispatcherPriority.Background);
                         }
                         catch (Exception ex)
@@ -411,6 +414,12 @@ namespace MangaAssistant.WPF.ViewModels
                 await Task.Factory.StartNew(async () =>
                 {
                     await _libraryService.ScanLibraryAsync();
+                    
+                    // Refresh cover images after scan completes
+                    await Application.Current.Dispatcher.InvokeAsync(() =>
+                    {
+                        RefreshCoverImages();
+                    }, DispatcherPriority.Background);
                 }, _scanCancellationSource.Token, TaskCreationOptions.LongRunning, TaskScheduler.Default);
             }
             catch (Exception ex)
@@ -428,6 +437,26 @@ namespace MangaAssistant.WPF.ViewModels
                     _progressUpdateTimer.Start();
                 }
             }
+        }
+
+        /// <summary>
+        /// Refreshes the cover images in the library view by clearing the image cache
+        /// and forcing the PathToImageSourceConverter to reload the images.
+        /// </summary>
+        private void RefreshCoverImages()
+        {
+            Application.Current.Dispatcher.Invoke(() =>
+            {
+                // Clear the PathToImageSourceConverter cache
+                if (Application.Current.MainWindow.Resources["PathToImageSourceConverter"] is MangaAssistant.WPF.Converters.PathToImageSourceConverter converter)
+                {
+                    Debug.WriteLine("Clearing image cache to refresh covers");
+                    converter.ClearCache();
+                }
+                
+                // Force property changed notification to refresh bindings
+                OnPropertyChanged(nameof(Series));
+            });
         }
     }
 } 

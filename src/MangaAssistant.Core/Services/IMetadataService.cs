@@ -8,6 +8,7 @@ namespace MangaAssistant.Core.Services
     {
         IReadOnlyList<IMetadataProvider> Providers { get; }
         Task<IEnumerable<SeriesSearchResult>> SearchAsync(string providerName, string query);
+        Task<SeriesMetadata> GetMetadataAsync(string providerName, string providerId);
         Task UpdateSeriesMetadataAsync(Series series, string providerName, string providerId);
     }
-} 
+}

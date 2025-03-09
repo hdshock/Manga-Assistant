@@ -1,0 +1,22 @@
+2025-03-08 09:01:04.005 [Info] Logger initialized
+2025-03-08 09:01:04.011 [Info] Starting metadata search test for 'GUL'
+2025-03-08 09:01:04.027 [Info] MangaDexMetadataProvider initialized
+2025-03-08 09:01:04.028 [Info] Testing MangaDex search for 'GUL'
+2025-03-08 09:01:04.030 [Info] Searching MangaDex for: GUL
+2025-03-08 09:01:04.030 [Warning] Detected search for 'GUL' - applying special handling
+2025-03-08 09:01:04.031 [Info] MangaDex search returned 0 results
+2025-03-08 09:01:04.031 [Info] Testing direct metadata retrieval for 'GUL' from MangaDex
+2025-03-08 09:01:04.032 [Info] Getting detailed metadata from MangaDex for ID: GUL
+2025-03-08 09:01:04.033 [Info] Getting metadata for MangaDex ID: GUL
+2025-03-08 09:01:04.033 [Warning] Detected request for 'GUL' metadata - applying special handling
+2025-03-08 09:01:04.034 [Warning] No metadata found or incomplete metadata for ID: GUL
+2025-03-08 09:01:04.034 [Info] Testing AniList search for 'GUL'
+2025-03-08 09:01:04.036 [Info] AniList searching for: GUL
+2025-03-08 09:01:04.036 [Warning] Detected search for 'GUL' - applying special handling
+2025-03-08 09:01:04.036 [Info] AniList search returned 0 results
+2025-03-08 09:01:04.036 [Info] Testing direct metadata retrieval for 'GUL' from AniList
+2025-03-08 09:01:04.037 [Info] Getting detailed metadata from AniList for ID: GUL
+2025-03-08 09:01:04.038 [Info] Getting metadata for AniList ID: GUL
+2025-03-08 09:01:04.038 [Warning] Detected request for 'GUL' metadata - applying special handling
+2025-03-08 09:01:04.039 [Warning] No metadata found or incomplete metadata for ID: GUL
+2025-03-08 09:01:04.039 [Info] Metadata search test completed

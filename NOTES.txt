@@ -1,0 +1,118 @@
+# MANGA ASSISTANT - DEVELOPMENT NOTES
+# Last Updated: 2025-03-08 07:18
+
+## PROJECT ARCHITECTURE
+The application follows a clean architecture pattern with the following layers:
+1. MangaAssistant.Core - Domain models and interfaces
+2. MangaAssistant.Application - Use cases and application services
+3. MangaAssistant.Infrastructure - Implementation of core interfaces
+4. MangaAssistant.Common - Shared utilities
+5. MangaAssistant.WPF - Main WPF application and ViewModels
+6. MangaAssistant.WPF.Controls - Reusable WPF controls
+
+## KEY COMPONENTS
+
+### LibraryScanner (MangaAssistant.Infrastructure.Services)
+- Responsible for scanning the manga library directory
+- Parses metadata from series-info.json files and ComicInfo.xml within CBZ files
+- Determines series titles based on priority: metadata file > CBZ ComicInfo > folder name
+- Emits events for scan progress and series discovery
+- [2025-03-08] Added DetermineSeriesTitleAsync method to prioritize metadata sources for series titles
+
+### LibraryService (MangaAssistant.Infrastructure.Services)
+- Manages the library of manga series
+- Coordinates scanning through LibraryScanner
+- Maintains series collection and provides access to it
+- Emits events when the library is updated or series are added
+- Handles caching of library data
+
+### MainViewModel (MangaAssistant.WPF.ViewModels)
+- Central ViewModel for the main application window
+- Manages the collection of Series objects displayed in the UI
+- Handles library scanning and progress reporting
+- Subscribes to events from LibraryService and LibraryScanner
+- [2025-03-08] Added RefreshCoverImages method to refresh cover images after scanning
+
+### MainWindow (MangaAssistant.WPF)
+- Main application window with navigation between views
+- Contains the LibraryView, SeriesDetailContainer, and SettingsContainer
+- Handles navigation between these views
+- [2025-03-08] Added RefreshLibraryCoverImages method to refresh covers when returning to library view
+
+### SeriesPage (MangaAssistant.WPF.Controls)
+- Displays detailed information about a selected series
+- Shows cover image, metadata, and chapter list
+- Allows editing of series metadata
+- Handles sorting and display of chapters
+
+### MangaCard (MangaAssistant.WPF.Controls)
+- UI component that displays a series in the library view
+- Shows cover image, title, and reading progress
+- Used in the ItemsControl in MainWindow.xaml
+
+### PathToImageSourceConverter (MangaAssistant.WPF.Converters)
+- Converts file paths to ImageSource objects for display in the UI
+- [2025-03-08] Added image caching and ClearCache method to improve performance and allow refreshing
+
+## IMPORTANT PATTERNS
+
+### WPF Threading Pattern
+- All UI collection updates must happen on the Dispatcher thread
+- Application.Current.Dispatcher.Invoke/InvokeAsync is used for UI updates
+- Temporary collections are used before updating UI collections
+- Error handling happens on the UI thread for proper user feedback
+
+### Event-Based Communication
+- Components communicate through events (e.g., LibraryUpdated, SeriesAdded, ScanProgress)
+- Event handlers are registered in constructors
+- Event args contain relevant data (e.g., ScanProgressEventArgs, LibraryUpdatedEventArgs)
+
+### MVVM Pattern
+- ViewModels expose properties and commands
+- Views bind to these properties
+- INotifyPropertyChanged is implemented for UI updates
+- Commands are used for user actions
+
+## FIXES AND IMPROVEMENTS
+
+### Series Title Display (2025-03-08)
+- Issue: Series titles were not consistently displayed in the library
+- Fix: Implemented DetermineSeriesTitleAsync method in LibraryScanner to prioritize metadata sources
+- Priority: 1) series-info.json metadata, 2) ComicInfo.xml from CBZ files, 3) folder name
+- Added debug logging to track which source is used for the title
+
+### Cover Image Refresh (2025-03-08)
+- Issue: Cover images were not refreshing when navigating back to the library or after scanning
+- Fix 1: Added image caching in PathToImageSourceConverter with a ClearCache method
+- Fix 2: Added RefreshLibraryCoverImages method to MainWindow to refresh covers when returning to library
+- Fix 3: Added RefreshCoverImages method to MainViewModel to refresh covers after scanning
+- This ensures covers are always up-to-date after metadata changes or rescanning
+
+## KNOWN ISSUES AND LIMITATIONS
+
+### File Locking
+- The application may encounter issues with locked files during scanning
+- This can happen if files are being accessed by other processes
+- Solution: Terminate the running application before building/debugging
+
+### Performance Considerations
+- Large libraries may take time to scan
+- Image loading is optimized with caching but can still be resource-intensive
+- The UI may become less responsive during scanning operations
+
+## DEBUGGING TIPS
+
+### Logging
+- Debug.WriteLine statements are used throughout the codebase
+- Check for these logs in the Output window when debugging
+- Key areas to monitor: scan progress, series discovery, metadata parsing
+
+### UI Refresh Issues
+- If UI elements are not updating, check if updates are happening on the Dispatcher thread
+- Verify that INotifyPropertyChanged is properly implemented
+- Check binding expressions in XAML
+
+### Image Loading Issues
+- Verify file paths are correct and accessible
+- Check if the PathToImageSourceConverter is handling exceptions properly
+- Ensure the cache is being cleared when needed

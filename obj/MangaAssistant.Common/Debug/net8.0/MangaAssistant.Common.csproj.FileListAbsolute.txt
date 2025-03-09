@@ -1,0 +1,12 @@
+C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\bin\MangaAssistant.Common\Debug\net8.0\MangaAssistant.Common.deps.json
+C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\bin\MangaAssistant.Common\Debug\net8.0\MangaAssistant.Common.dll
+C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\bin\MangaAssistant.Common\Debug\net8.0\MangaAssistant.Common.pdb
+C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\obj\MangaAssistant.Common\Debug\net8.0\MangaAssistant.Common.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\obj\MangaAssistant.Common\Debug\net8.0\MangaAssistant.Common.AssemblyInfoInputs.cache
+C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\obj\MangaAssistant.Common\Debug\net8.0\MangaAssistant.Common.AssemblyInfo.cs
+C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\obj\MangaAssistant.Common\Debug\net8.0\MangaAssistant.Common.csproj.CoreCompileInputs.cache
+C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\obj\MangaAssistant.Common\Debug\net8.0\MangaAssistant.Common.sourcelink.json
+C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\obj\MangaAssistant.Common\Debug\net8.0\MangaAssistant.Common.dll
+C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\obj\MangaAssistant.Common\Debug\net8.0\refint\MangaAssistant.Common.dll
+C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\obj\MangaAssistant.Common\Debug\net8.0\MangaAssistant.Common.pdb
+C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\obj\MangaAssistant.Common\Debug\net8.0\ref\MangaAssistant.Common.dll

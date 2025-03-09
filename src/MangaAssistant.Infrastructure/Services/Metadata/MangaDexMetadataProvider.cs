@@ -102,7 +102,8 @@ namespace MangaAssistant.Infrastructure.Services.Metadata
                     var results = mangaResponse.Data.Select(manga =>
                     {
                         var title = GetBestTitle(manga.Attributes.Title);
-                        Logger.Log($"Found manga: {title} (ID: {manga.Id})", LogLevel.Debug, "MangaDex");
+                        var coverUrl = GetCoverUrl(manga);
+                        Logger.Log($"Found manga: {title} (ID: {manga.Id}, Cover: {coverUrl})", LogLevel.Debug, "MangaDex");
                         return new SeriesSearchResult
                         {
                             ProviderId = manga.Id,
@@ -113,7 +114,8 @@ namespace MangaAssistant.Infrastructure.Services.Metadata
                             Status = ConvertStatus(manga.Attributes.Status),
                             Url = $"{MangaUrl}/{manga.Id}",
                             ChapterCount = 0,
-                            VolumeCount = 0
+                            VolumeCount = 0,
+                            CoverUrl = coverUrl
                         };
                     }).ToList();
 
@@ -175,7 +177,8 @@ namespace MangaAssistant.Infrastructure.Services.Metadata
                             .ToList(),
                         ProviderId = providerId,
                         ProviderName = Name,
-                        ProviderUrl = $"{MangaUrl}/{providerId}"
+                        ProviderUrl = $"{MangaUrl}/{providerId}",
+                        CoverUrl = GetCoverUrl(manga)
                     };
 
                     await EnrichWithChapterMetadata(metadata, providerId);
@@ -267,7 +270,7 @@ namespace MangaAssistant.Infrastructure.Services.Metadata
         {
             try
             {
-                return await ExecuteWithRetryAsync(async () =>
+                var response = await ExecuteWithRetryAsync<HttpResponseMessage>(async () =>
                 {
                     var response = await _httpClient.GetAsync(url);
                     await HandleRateLimitsAsync(response);
@@ -276,11 +279,18 @@ namespace MangaAssistant.Infrastructure.Services.Metadata
                     {
                         var requestId = response.Headers.GetValues("X-Request-ID").FirstOrDefault();
                         Logger.Log($"Failed to fetch cover image (Request ID: {requestId}): {response.StatusCode}", LogLevel.Warning, "MangaDex");
-                        return null;
+                        return response;
                     }
 
-                    return await response.Content.ReadAsByteArrayAsync();
+                    return response;
                 });
+
+                if (response.IsSuccessStatusCode)
+                {
+                    return await response.Content.ReadAsByteArrayAsync();
+                }
+
+                return null;
             }
             catch (Exception ex)
             {
@@ -345,18 +355,20 @@ namespace MangaAssistant.Infrastructure.Services.Metadata
                 ProviderName = Name,
                 ProviderUrl = $"{MangaUrl}/{providerId}",
                 Series = "Unknown Series",
-                Status = "Unknown"
+                Status = "Unknown",
+                CoverUrl = string.Empty
             };
         }
 
-        private async Task<T> ExecuteWithRetryAsync<T>(Func<Task<T>> action)
+        private async Task<T> ExecuteWithRetryAsync<T>(Func<Task<T>> action) where T : class
         {
             for (int i = 0; i < MaxRetries; i++)
             {
                 try
                 {
                     await _rateLimiter.WaitAsync();
-                    return await action();
+                    var result = await action();
+                    return result ?? throw new InvalidOperationException("Action returned null result");
                 }
                 catch (HttpRequestException ex)
                 {
@@ -391,6 +403,25 @@ namespace MangaAssistant.Infrastructure.Services.Metadata
                     }
                 }
             }
+        }
+
+        private string GetCoverUrl(MangaDexManga manga)
+        {
+            var coverArt = manga.Relationships
+                .FirstOrDefault(r => r.Type == "cover_art")?
+                .Attributes as JsonElement?;
+
+            if (coverArt == null)
+                return string.Empty;
+
+            var fileName = coverArt.Value
+                .GetProperty("fileName")
+                .GetString();
+
+            if (string.IsNullOrEmpty(fileName))
+                return string.Empty;
+
+            return $"{CoverUrl}/{manga.Id}/{fileName}";
         }
 
         public void Dispose()

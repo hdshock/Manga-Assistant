@@ -574,3 +574,41 @@ Remember to update these notes as new patterns or issues are discovered.
   * Correctly handles decimal chapter numbers
   * Properly manages XML encoding issues
   * Maintains data consistency with Kavita
+
+## MangaDex Integration
+
+### Search Implementation
+- Uses MangaDex API v5
+- Supports multiple content ratings (safe, suggestive, erotica, pornographic)
+- Includes cover art and author data in search results
+- No language restrictions to ensure maximum search coverage
+- Uses proper parameter handling for array parameters (includes[], contentRating[])
+- Implements rate limiting and exponential backoff for failed requests
+
+### Cover Images
+- Cover URLs format: https://uploads.mangadex.org/covers/{mangaId}/{fileName}
+- Cover information is retrieved from the relationships array in manga data
+- Cover art is included in both search results and detailed metadata
+
+### Chapter/Volume Handling
+- Retrieves all chapters regardless of language for accurate counts
+- Properly parses volume numbers with fallback for invalid values
+- Supports series with and without volume information
+- Maximum of 500 chapters per request
+
+### Error Handling
+- Implements retry logic with exponential backoff
+- Logs request IDs for debugging
+- Provides detailed error messages in logs
+- Handles rate limits using X-RateLimit headers
+
+### Best Practices
+- Prioritizes English titles/descriptions but falls back to other languages
+- Caches rate limit information to prevent API throttling
+- Uses proper HTTP headers (Accept, User-Agent)
+- Implements proper resource disposal
+
+### Known Issues/Limitations
+- Rate limited to one request at a time
+- Maximum of 20 search results per query
+- Requires proper error handling for malformed volume numbers

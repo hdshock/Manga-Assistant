@@ -98,5 +98,8 @@ namespace MangaAssistant.Core.Models
 
         [JsonPropertyName("rating")]
         public double Rating { get; set; }
+
+        [JsonPropertyName("coverUrl")]
+        public string CoverUrl { get; set; } = string.Empty;
     }
 } 

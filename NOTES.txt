@@ -1,5 +1,5 @@
 # MANGA ASSISTANT - DEVELOPMENT NOTES
-# Last Updated: 2025-03-08 07:18
+# Last Updated: 2025-03-10 16:15
 
 ## PROJECT ARCHITECTURE
 The application follows a clean architecture pattern with the following layers:
@@ -37,7 +37,7 @@ The application follows a clean architecture pattern with the following layers:
 - Main application window with navigation between views
 - Contains the LibraryView, SeriesDetailContainer, and SettingsContainer
 - Handles navigation between these views
-- [2025-03-08] Added RefreshLibraryCoverImages method to refresh covers when returning to library view
+- [2025-03-08] Added RefreshLibraryCoverImages method to refresh covers when returning to library
 
 ### SeriesPage (MangaAssistant.WPF.Controls)
 - Displays detailed information about a selected series
@@ -87,6 +87,86 @@ The application follows a clean architecture pattern with the following layers:
 - Fix 2: Added RefreshLibraryCoverImages method to MainWindow to refresh covers when returning to library
 - Fix 3: Added RefreshCoverImages method to MainViewModel to refresh covers after scanning
 - This ensures covers are always up-to-date after metadata changes or rescanning
+
+### Chapter Scanning Logic Improvements (2025-03-09)
+- Issue: Chapter scanning logic was not accurately detecting chapter numbers, especially for series with numbers in their names
+- Fix 1: Improved regex patterns to better handle various chapter naming formats
+- Fix 2: Added context-aware parsing that considers the series directory name
+- Fix 3: Added special handling for series with numbers in their names (like Bio Booster Armor Guyver)
+- Fix 4: Enhanced the last-resort number detection to be more cautious to avoid false positives
+- Fix 5: Added specific handling for Guyver manga with "Chapter XXX" naming pattern
+- This ensures more accurate chapter numbering across different manga series naming conventions
+
+### Chapter Context Menu Improvements (2025-03-09)
+- Issue: Chapter context menu contained unnecessary options and lacked a way to view the chapter's filename
+- Fix 1: Removed "Edit Metadata", "Rename Files", and "Delete" options from the context menu
+- Fix 2: Added "Read", "Open Folder", and "View Chapter Name" options
+- Fix 3: Implemented handlers for the new menu options
+- Fix 4: Updated ChapterContextMenu class to match the changes in SeriesPage.xaml
+- Fix 5: Added ViewChapterName method to display the chapter filename in a message box
+- This provides a more streamlined and useful context menu for chapter management
+
+### Sidebar Menu Enhancements (2025-03-09)
+- Issue: The sidebar menu was small and lacked visual appeal
+- Fix 1: Increased the width of the sidebar from 250px to 300px
+- Fix 2: Added a gradient background and shadow effect for depth
+- Fix 3: Improved button styling with animations, hover effects, and active state indicators
+- Fix 4: Added a Tools section with a Scan Library button
+- Fix 5: Added a footer section with version information
+- Fix 6: Refactored the navigation system to use a ContentControl for better content switching
+- This creates a more modern, visually appealing, and user-friendly navigation experience
+
+### Event Handling Improvements (2025-03-10)
+- Issue: Event handling for MangaCard components was not properly implemented
+- Fix 1: Added proper routed event definitions for SeriesClicked and MetadataUpdateRequested events
+- Fix 2: Implemented CLR event wrappers for better usability
+- Fix 3: Updated event raising mechanism to use RaiseEvent for proper event routing
+- Fix 4: Removed SearchBox and its related event handler as it was replaced by the sidebar search functionality
+- This ensures proper event propagation and handling throughout the application
+
+### Build Error Fixes (2025-03-10)
+- Issue: Build was failing with error MC4005 about TextTransform property not found on TextBlock
+- Fix: Removed the TextTransform property from SectionHeaderStyle in MainWindow.xaml as it's not supported in WPF
+- Note: TextTransform is a CSS property but not available in WPF; to achieve uppercase text, use StringFormat or a converter
+- The build now completes successfully with only minor warnings
+
+### MangaCard Animation Fix (2025-03-10)
+- Issue: Application was crashing with "System.InvalidOperationException: 'Transform' name cannot be found in the name scope of 'MangaAssistant.WPF.Controls.MangaCard'"
+- Root Cause: The Storyboard animations in MangaCard.xaml were trying to target an element named "Transform" using Storyboard.TargetName, but there was a name scope issue
+- Fix 1: Removed the Storyboard resources from MangaCard.xaml
+- Fix 2: Implemented the animations directly in code in MangaCard_MouseEnter and MangaCard_MouseLeave methods
+- Fix 3: Used direct animation on the ScaleTransform properties instead of relying on named targets
+- This ensures the hover animations work correctly without name scope issues
+
+### Log Window and UI Improvements (2025-03-10)
+- Issue: The Scan Library button on the main page was not in an intuitive location and there was no way to view application logs
+- Fix 1: Removed the Scan Library button from the main sidebar and replaced it with a View Logs button
+- Fix 2: Created a new LogWindow control that displays application logs with filtering capabilities
+- Fix 3: Added a Scan Library button to the SeriesPage action buttons for more contextual access
+- Fix 4: Implemented the OnScanLibraryClick method in SeriesPage to trigger library scanning
+- Fix 5: Enhanced the OnRefreshClick method to properly refresh series metadata
+- This provides better access to application logs for debugging and moves the Scan Library functionality to a more appropriate location
+
+### Logger and LogWindow Enhancements (2025-03-11)
+- Issue: The LogWindow needed an auto-scroll feature and the Logger needed to be more robust
+- Fix 1: Added an auto-scroll checkbox to the LogWindow to allow users to toggle automatic scrolling
+- Fix 2: Enhanced the Logger class to store logs in memory for real-time display in the LogWindow
+- Fix 3: Added methods to retrieve and clear logs from the Logger
+- Fix 4: Implemented a LogAdded event to notify the LogWindow of new log entries
+- Fix 5: Added support for the CRITICAL log level
+- Fix 6: Replaced Debug.WriteLine calls with Logger.Log calls throughout the codebase
+- This improves the logging experience and makes it easier to debug issues in the application
+
+### LogWindow Performance Improvements (2025-03-11)
+- Issue: The LogWindow was becoming unresponsive when displaying a large number of logs
+- Fix 1: Implemented a throttling mechanism using a DispatcherTimer to limit UI updates
+- Fix 2: Added batch processing of logs to prevent UI freezing (50 logs per batch)
+- Fix 3: Created a queue system for pending logs to manage memory usage
+- Fix 4: Optimized the auto-scrolling behavior to only scroll when necessary
+- Fix 5: Added a cap on the number of log entries (5000) to prevent memory issues
+- Fix 6: Improved the log filtering system to be more efficient
+- Fix 7: Used background priority for dispatcher operations to keep the UI responsive
+- These changes significantly improve the LogWindow's performance and responsiveness when displaying a large number of logs
 
 ## KNOWN ISSUES AND LIMITATIONS
 

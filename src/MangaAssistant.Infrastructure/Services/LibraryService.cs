@@ -10,6 +10,7 @@ using System.Linq;
 using System.Diagnostics;
 using MangaAssistant.Core;
 using System.Windows;
+using MangaAssistant.Common.Logging;
 
 namespace MangaAssistant.Infrastructure.Services
 {
@@ -186,35 +187,41 @@ namespace MangaAssistant.Infrastructure.Services
         {
             if (_isScanning)
             {
-                Debug.WriteLine("Scan already in progress");
+                Logger.Log("Scan already in progress", LogLevel.Warning);
                 return;
             }
 
             _isScanning = true;
-            Debug.WriteLine("Starting library scan");
+            Logger.Log("Starting library scan", LogLevel.Info);
 
             try
             {
                 // Start a new scan
-                var scannedSeries = await _libraryScanner.ScanLibraryAsync();
-                Debug.WriteLine($"Scanner found {scannedSeries.Count} series");
+                var scanResult = await _libraryScanner.ScanLibraryAsync();
+                Logger.Log($"Scanner found {scanResult.Series.Count} series", LogLevel.Info);
+                
+                if (!scanResult.Success)
+                {
+                    Logger.Log($"Scan failed: {scanResult.Message}", LogLevel.Error);
+                    return;
+                }
                 
                 // Update the series list with found series
                 lock (_seriesLock)
                 {
-                    Debug.WriteLine("Updating series list");
+                    Logger.Log("Updating series list", LogLevel.Info);
                     // Keep existing series that are still valid
                     var existingSeries = _series
                         .Where(s => Directory.Exists(s.FolderPath))
                         .ToDictionary(s => s.FolderPath, StringComparer.OrdinalIgnoreCase);
-                    Debug.WriteLine($"Found {existingSeries.Count} existing valid series");
+                    Logger.Log($"Found {existingSeries.Count} existing valid series", LogLevel.Info);
 
                     // Update or add scanned series
-                    foreach (var series in scannedSeries)
+                    foreach (var series in scanResult.Series)
                     {
                         if (existingSeries.TryGetValue(series.FolderPath, out var existing))
                         {
-                            Debug.WriteLine($"Updating existing series: {series.Title}");
+                            Logger.Log($"Updating existing series: {series.Title}", LogLevel.Info);
                             // Update existing series while preserving metadata and progress
                             existing.Title = series.Title;
                             existing.LastModified = series.LastModified;

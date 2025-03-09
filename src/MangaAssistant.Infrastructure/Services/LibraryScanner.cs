@@ -14,6 +14,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Threading;
 using MangaAssistant.Infrastructure.Services.EventArgs;
+using MangaAssistant.Common.Logging;
 
 namespace MangaAssistant.Infrastructure.Services
 {
@@ -39,6 +40,10 @@ namespace MangaAssistant.Infrastructure.Services
         private int _scannedDirectories;
         private bool _isScanning;
         private CancellationTokenSource? _scanCancellationSource;
+
+        // Events
+        public event EventHandler<Series>? SeriesFound;
+        public event EventHandler<ScanProgressChangedEventArgs>? ScanProgressChanged;
 
         // Common patterns for chapter numbers in filenames
         private static readonly Regex[] ChapterPatterns = new[]
@@ -72,7 +77,6 @@ namespace MangaAssistant.Infrastructure.Services
         };
 
         public event EventHandler<ScanProgressEventArgs>? ScanProgress;
-        public event EventHandler<Series>? SeriesFound;
 
         public bool IsScanning => _isScanning;
 
@@ -86,7 +90,8 @@ namespace MangaAssistant.Infrastructure.Services
                 PropertyNameCaseInsensitive = true
             };
             
-            Debug.WriteLine($"LibraryScanner initialized. InsertCoverIntoFirstChapter setting: {_settingsService.InsertCoverIntoFirstChapter}");
+            // Log initialization
+            Logger.Log($"LibraryScanner initialized. InsertCoverIntoFirstChapter setting: {_settingsService.InsertCoverIntoFirstChapter}", LogLevel.Info);
         }
 
         public void CancelScan()
@@ -94,93 +99,162 @@ namespace MangaAssistant.Infrastructure.Services
             _scanCancellationSource?.Cancel();
         }
 
-        public async Task<List<Series>> ScanLibraryAsync(CancellationToken cancellationToken = default)
+        public async Task<ScanResult> ScanLibraryAsync(CancellationToken cancellationToken = default)
         {
-            if (_isScanning)
-            {
-                Debug.WriteLine("Scan already in progress, returning empty list");
-                return new List<Series>();
-            }
-
             try
             {
-                _isScanning = true;
-                _scanCancellationSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-
-                var libraryPath = _settingsService.LibraryPath;
-                Debug.WriteLine($"Starting scan of library path: {libraryPath}");
-                
-                if (string.IsNullOrEmpty(libraryPath) || !Directory.Exists(libraryPath))
+                // Check if a scan is already in progress
+                if (_isScanning)
                 {
-                    Debug.WriteLine("Library path is empty or doesn't exist");
-                    return new List<Series>();
+                    Logger.Log("Scan already in progress, ignoring request", LogLevel.Warning);
+                    return new ScanResult { Success = false, Message = "Scan already in progress" };
                 }
 
-                return await ScanLibraryPathAsync(libraryPath, _scanCancellationSource.Token);
+                // Acquire the scan lock to prevent multiple scans
+                await _scanLock.WaitAsync(cancellationToken);
+                _isScanning = true;
+
+                // Create a new cancellation token source that can be used to cancel the scan
+                _scanCancellationSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+                var linkedToken = _scanCancellationSource.Token;
+
+                // Get the library path from settings
+                var libraryPath = _settingsService.LibraryPath;
+                if (string.IsNullOrEmpty(libraryPath) || !Directory.Exists(libraryPath))
+                {
+                    Logger.Log($"Library path is invalid or does not exist: {libraryPath}", LogLevel.Error);
+                    return new ScanResult { Success = false, Message = "Library path is invalid or does not exist" };
+                }
+
+                Logger.Log($"Starting library scan at: {libraryPath}", LogLevel.Info);
+
+                // Get all directories in the library path
+                var directories = Directory.GetDirectories(libraryPath);
+                _totalDirectories = directories.Length;
+                _scannedDirectories = 0;
+
+                Logger.Log($"Found {_totalDirectories} directories to scan", LogLevel.Info);
+
+                // Create a list to store the series
+                var seriesList = new List<Series>();
+                var tasks = new List<Task<Series?>>();
+
+                // Process each directory in batches
+                foreach (var directory in directories)
+                {
+                    // Check if the scan has been cancelled
+                    if (linkedToken.IsCancellationRequested)
+                    {
+                        Logger.Log("Scan cancelled by user", LogLevel.Warning);
+                        break;
+                    }
+
+                    // Wait for a slot in the semaphore
+                    await _scanSemaphore.WaitAsync(linkedToken);
+
+                    // Start a task to process the directory
+                    tasks.Add(Task.Run(async () =>
+                    {
+                        try
+                        {
+                            // Process the directory
+                            var series = await ProcessDirectoryAsync(directory, linkedToken);
+                            return series;
+                        }
+                        catch (Exception ex)
+                        {
+                            Logger.Log($"Error processing directory {directory}: {ex.Message}", LogLevel.Error);
+                            return null;
+                        }
+                        finally
+                        {
+                            // Release the semaphore slot
+                            _scanSemaphore.Release();
+                            
+                            // Update the progress
+                            Interlocked.Increment(ref _scannedDirectories);
+                            
+                            // Raise the progress event
+                            OnScanProgressChanged(new ScanProgressChangedEventArgs
+                            {
+                                TotalDirectories = _totalDirectories,
+                                ScannedDirectories = _scannedDirectories,
+                                ProgressPercentage = (int)((double)_scannedDirectories / _totalDirectories * 100)
+                            });
+                        }
+                    }, linkedToken));
+
+                    // When we have enough tasks, wait for them to complete
+                    if (tasks.Count >= BATCH_SIZE)
+                    {
+                        var completedTasks = await Task.WhenAll(tasks);
+                        seriesList.AddRange(completedTasks.Where(s => s != null));
+                        tasks.Clear();
+                    }
+                }
+
+                // Wait for any remaining tasks
+                if (tasks.Count > 0)
+                {
+                    var completedTasks = await Task.WhenAll(tasks);
+                    seriesList.AddRange(completedTasks.Where(s => s != null));
+                }
+
+                Logger.Log($"Scan completed. Found {seriesList.Count} series", LogLevel.Info);
+
+                // Return the scan result
+                return new ScanResult
+                {
+                    Success = true,
+                    Series = seriesList,
+                    Message = $"Scan completed. Found {seriesList.Count} series"
+                };
+            }
+            catch (OperationCanceledException)
+            {
+                Logger.Log("Scan was cancelled", LogLevel.Warning);
+                return new ScanResult { Success = false, Message = "Scan was cancelled" };
+            }
+            catch (Exception ex)
+            {
+                Logger.Log($"Error during library scan: {ex.Message}", LogLevel.Error);
+                return new ScanResult { Success = false, Message = $"Error during scan: {ex.Message}" };
             }
             finally
             {
+                // Reset the scanning state
                 _isScanning = false;
-                _totalDirectories = 0;
-                _scannedDirectories = 0;
+                _scanCancellationSource?.Dispose();
+                _scanCancellationSource = null;
+                
+                // Release the scan lock
+                _scanLock.Release();
             }
         }
 
-        private async Task<List<Series>> ScanLibraryPathAsync(string libraryPath, CancellationToken cancellationToken)
+        private async Task<Series?> ProcessDirectoryAsync(string directoryPath, CancellationToken cancellationToken)
         {
-            var series = new ConcurrentBag<Series>();
-            var directories = Directory.GetDirectories(libraryPath);
-            
-            Debug.WriteLine($"Found {directories.Length} directories to scan");
-            _totalDirectories = directories.Length;
-            _scannedDirectories = 0;
-
-            var tasks = new List<Task>();
-            foreach (var directory in directories)
+            try
             {
-                if (cancellationToken.IsCancellationRequested)
+                Logger.Log($"Scanning directory: {directoryPath}", LogLevel.Info);
+                var scannedSeries = await ScanSeriesDirectoryAsync(directoryPath);
+                if (scannedSeries != null)
                 {
-                    Debug.WriteLine("Scan cancelled");
-                    break;
+                    Logger.Log($"Found series: {scannedSeries.Title} with {scannedSeries.Chapters?.Count ?? 0} chapters", LogLevel.Info);
+                    SeriesFound?.Invoke(this, scannedSeries);
                 }
-
-                await _scanSemaphore.WaitAsync(cancellationToken);
-                
-                tasks.Add(Task.Run(async () =>
+                else
                 {
-                    try
-                    {
-                        Debug.WriteLine($"Scanning directory: {directory}");
-                        var scannedSeries = await ScanSeriesDirectoryAsync(directory);
-                        if (scannedSeries != null)
-                        {
-                            Debug.WriteLine($"Found series: {scannedSeries.Title} with {scannedSeries.Chapters?.Count ?? 0} chapters");
-                            series.Add(scannedSeries);
-                            SeriesFound?.Invoke(this, scannedSeries);
-                        }
-                        else
-                        {
-                            Debug.WriteLine($"No series found in directory: {directory}");
-                        }
-                        
-                        Interlocked.Increment(ref _scannedDirectories);
-                        var progress = (double)_scannedDirectories / _totalDirectories;
-                        OnScanProgress(progress, scannedSeries?.Title ?? string.Empty, _scannedDirectories, _totalDirectories);
-                    }
-                    catch (Exception ex)
-                    {
-                        Debug.WriteLine($"Error scanning directory {directory}: {ex.Message}");
-                    }
-                    finally
-                    {
-                        _scanSemaphore.Release();
-                    }
-                }, cancellationToken));
+                    Logger.Log($"No series found in directory: {directoryPath}", LogLevel.Info);
+                }
+                
+                return scannedSeries;
             }
-
-            await Task.WhenAll(tasks.Where(t => !t.IsCanceled));
-            Debug.WriteLine($"Scan complete. Found {series.Count} series");
-            return series.OrderBy(s => s.Title).ToList();
+            catch (Exception ex)
+            {
+                Logger.Log($"Error scanning directory {directoryPath}: {ex.Message}", LogLevel.Error);
+                return null;
+            }
         }
 
         private void OnScanProgress(double progress, string seriesTitle, int scannedDirectories, int totalDirectories)
@@ -215,7 +289,7 @@ namespace MangaAssistant.Infrastructure.Services
             try
             {
                 var cbzFiles = Directory.GetFiles(directoryPath, "*.cbz", SearchOption.TopDirectoryOnly);
-                Debug.WriteLine($"Found {cbzFiles.Length} CBZ files in {directoryPath}");
+                Logger.Log($"Found {cbzFiles.Length} CBZ files in {directoryPath}", LogLevel.Info);
                 
                 var directoryInfo = new DirectoryInfo(directoryPath);
                 var seriesName = directoryInfo.Name;
@@ -224,19 +298,19 @@ namespace MangaAssistant.Infrastructure.Services
                 var existingMetadata = await LoadSeriesMetadataAsync(directoryPath);
                 if (existingMetadata != null)
                 {
-                    Debug.WriteLine($"Loaded existing metadata for {seriesName}");
+                    Logger.Log($"Loaded existing metadata for {seriesName}", LogLevel.Info);
                 }
                 
                 // Find cover images
                 var coverImages = FindCoverImages(directoryPath);
-                Debug.WriteLine($"Found {coverImages.Length} cover images for {seriesName}");
+                Logger.Log($"Found {coverImages.Length} cover images for {seriesName}", LogLevel.Info);
 
                 // Determine the series title based on priority:
                 // 1. Metadata file in the series folder
                 // 2. Series title from CBZ files in the folder
                 // 3. Folder name if no other titles are available
                 string seriesTitle = await DetermineSeriesTitleAsync(directoryPath, cbzFiles, existingMetadata, seriesName);
-                Debug.WriteLine($"Determined series title: {seriesTitle}");
+                Logger.Log($"Determined series title: {seriesTitle}", LogLevel.Info);
 
                 // Create series object with basic info
                 var series = new Series
@@ -257,24 +331,24 @@ namespace MangaAssistant.Infrastructure.Services
                     series.CoverPath = selectedIndex >= 0 && selectedIndex < coverImages.Length 
                         ? coverImages[selectedIndex] 
                         : coverImages[0];
-                    Debug.WriteLine($"Using cover image: {series.CoverPath}");
+                    Logger.Log($"Using cover image: {series.CoverPath}", LogLevel.Info);
                 }
                 else
                 {
-                    Debug.WriteLine($"No cover images found for {seriesName}, using placeholder");
+                    Logger.Log($"No cover images found for {seriesName}, using placeholder", LogLevel.Info);
                     var placeholderPath = Path.Combine(directoryPath, DEFAULT_PLACEHOLDER);
                     if (!File.Exists(placeholderPath))
                     {
                         try
                         {
                             var sourcePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", DEFAULT_PLACEHOLDER);
-                            Debug.WriteLine($"Copying placeholder from {sourcePath} to {placeholderPath}");
+                            Logger.Log($"Copying placeholder from {sourcePath} to {placeholderPath}", LogLevel.Info);
                             File.Copy(sourcePath, placeholderPath);
                             series.CoverPath = placeholderPath;
                         }
                         catch (Exception ex)
                         {
-                            Debug.WriteLine($"Failed to create placeholder: {ex.Message}");
+                            Logger.Log($"Failed to create placeholder: {ex.Message}", LogLevel.Error);
                         }
                     }
                     else
@@ -285,7 +359,7 @@ namespace MangaAssistant.Infrastructure.Services
 
                 if (!cbzFiles.Any())
                 {
-                    Debug.WriteLine($"No CBZ files found for {seriesName}");
+                    Logger.Log($"No CBZ files found for {seriesName}", LogLevel.Info);
                     series.Chapters = new List<Chapter>();
                     return series;
                 }
@@ -295,7 +369,7 @@ namespace MangaAssistant.Infrastructure.Services
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Error scanning directory {directoryPath}: {ex.Message}");
+                Logger.Log($"Error scanning directory {directoryPath}: {ex.Message}", LogLevel.Error);
                 return null;
             }
         }
@@ -313,12 +387,12 @@ namespace MangaAssistant.Infrastructure.Services
                     if (chapter != null)
                     {
                         chapters.Add(chapter);
-                        Debug.WriteLine($"Added chapter {chapter.Number} for {series.Title}");
+                        Logger.Log($"Added chapter {chapter.Number} for {series.Title}", LogLevel.Info);
                     }
                 });
 
                 await Task.WhenAll(chapterTasks);
-                Debug.WriteLine($"Processed {chapters.Count} chapters for {series.Title}");
+                Logger.Log($"Processed {chapters.Count} chapters for {series.Title}", LogLevel.Info);
 
                 // Sort chapters and update series
                 series.Chapters = chapters.OrderBy(c => c.Number).ToList();
@@ -326,38 +400,38 @@ namespace MangaAssistant.Infrastructure.Services
                 // Insert cover into first chapter if setting is enabled
                 if (_settingsService.InsertCoverIntoFirstChapter && series.Chapters.Count > 0)
                 {
-                    Debug.WriteLine($"Cover insertion setting is enabled. Looking for first chapter in {series.Title}");
+                    Logger.Log($"Cover insertion setting is enabled. Looking for first chapter in {series.Title}", LogLevel.Info);
                     var firstChapter = series.Chapters.OrderBy(c => c.Number).FirstOrDefault();
                     if (firstChapter != null)
                     {
-                        Debug.WriteLine($"Found first chapter: {firstChapter.Title}, Number: {firstChapter.Number}");
+                        Logger.Log($"Found first chapter: {firstChapter.Title}, Number: {firstChapter.Number}", LogLevel.Info);
                         string coverPath = Path.Combine(series.FolderPath, "cover.jpg");
-                        Debug.WriteLine($"Looking for cover image at: {coverPath}");
+                        Logger.Log($"Looking for cover image at: {coverPath}", LogLevel.Info);
                         if (File.Exists(coverPath))
                         {
-                            Debug.WriteLine($"Cover image found. Attempting to insert into: {firstChapter.FilePath}");
+                            Logger.Log($"Cover image found. Attempting to insert into: {firstChapter.FilePath}", LogLevel.Info);
                             await InsertCoverIntoChapterAsync(firstChapter.FilePath, coverPath);
                         }
                         else
                         {
-                            Debug.WriteLine($"Cover image not found at: {coverPath}");
+                            Logger.Log($"Cover image not found at: {coverPath}", LogLevel.Info);
                         }
                     }
                     else
                     {
-                        Debug.WriteLine($"No chapters found for series: {series.Title}");
+                        Logger.Log($"No chapters found for series: {series.Title}", LogLevel.Info);
                     }
                 }
                 else
                 {
-                    Debug.WriteLine($"Cover insertion setting is disabled or no chapters found. Setting: {_settingsService.InsertCoverIntoFirstChapter}, Chapters: {series.Chapters.Count}");
+                    Logger.Log($"Cover insertion setting is disabled or no chapters found. Setting: {_settingsService.InsertCoverIntoFirstChapter}, Chapters: {series.Chapters.Count}", LogLevel.Info);
                 }
 
                 return series;
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Error processing chapters: {ex.Message}");
+                Logger.Log($"Error processing chapters: {ex.Message}", LogLevel.Error);
                 return series;
             }
         }
@@ -367,17 +441,17 @@ namespace MangaAssistant.Infrastructure.Services
         {
             try
             {
-                Debug.WriteLine($"Starting cover insertion for: {cbzFilePath}");
+                Logger.Log($"Starting cover insertion for: {cbzFilePath}", LogLevel.Info);
                 
                 if (!File.Exists(cbzFilePath))
                 {
-                    Debug.WriteLine($"CBZ file does not exist: {cbzFilePath}");
+                    Logger.Log($"CBZ file does not exist: {cbzFilePath}", LogLevel.Warning);
                     return false;
                 }
                 
                 if (!File.Exists(coverImagePath))
                 {
-                    Debug.WriteLine($"Cover image does not exist: {coverImagePath}");
+                    Logger.Log($"Cover image does not exist: {coverImagePath}", LogLevel.Warning);
                     return false;
                 }
                 
@@ -387,11 +461,11 @@ namespace MangaAssistant.Infrastructure.Services
                     $"temp_{Path.GetFileName(cbzFilePath)}"
                 );
                 
-                Debug.WriteLine($"Created temporary file at: {tempFilePath}");
+                Logger.Log($"Created temporary file at: {tempFilePath}", LogLevel.Info);
 
                 // Read the cover image into memory
                 byte[] coverImageBytes = await File.ReadAllBytesAsync(coverImagePath);
-                Debug.WriteLine($"Read cover image, size: {coverImageBytes.Length} bytes");
+                Logger.Log($"Read cover image, size: {coverImageBytes.Length} bytes", LogLevel.Info);
 
                 try
                 {
@@ -404,26 +478,26 @@ namespace MangaAssistant.Infrastructure.Services
                         using (var entryStream = coverEntry.Open())
                         {
                             await entryStream.WriteAsync(coverImageBytes, 0, coverImageBytes.Length);
-                            Debug.WriteLine("Added cover image to temporary archive");
+                            Logger.Log("Added cover image to temporary archive", LogLevel.Info);
                         }
 
                         // Copy all entries from the original archive
-                        Debug.WriteLine($"Opening original archive: {cbzFilePath}");
+                        Logger.Log($"Opening original archive: {cbzFilePath}", LogLevel.Info);
                         using (var originalFileStream = File.OpenRead(cbzFilePath))
                         using (var originalArchive = new ZipArchive(originalFileStream, ZipArchiveMode.Read))
                         {
-                            Debug.WriteLine($"Original archive has {originalArchive.Entries.Count} entries");
+                            Logger.Log($"Original archive has {originalArchive.Entries.Count} entries", LogLevel.Info);
                             foreach (var entry in originalArchive.Entries)
                             {
                                 // Skip if it's already a cover image with the same name
                                 if (entry.Name.Equals("cover.jpg", StringComparison.OrdinalIgnoreCase))
                                 {
-                                    Debug.WriteLine($"Skipping existing cover image: {entry.Name}");
+                                    Logger.Log($"Skipping existing cover image: {entry.Name}", LogLevel.Info);
                                     continue;
                                 }
 
                                 // Copy the entry to the new archive
-                                Debug.WriteLine($"Copying entry: {entry.Name}");
+                                Logger.Log($"Copying entry: {entry.Name}", LogLevel.Info);
                                 var newEntry = tempArchive.CreateEntry(entry.Name);
                                 using (var originalEntryStream = entry.Open())
                                 using (var newEntryStream = newEntry.Open())
@@ -435,17 +509,17 @@ namespace MangaAssistant.Infrastructure.Services
                     }
 
                     // Replace the original file with the new one
-                    Debug.WriteLine($"Deleting original file: {cbzFilePath}");
+                    Logger.Log($"Deleting original file: {cbzFilePath}", LogLevel.Info);
                     File.Delete(cbzFilePath);
-                    Debug.WriteLine($"Moving temporary file to original location");
+                    Logger.Log($"Moving temporary file to original location", LogLevel.Info);
                     File.Move(tempFilePath, cbzFilePath);
 
-                    Debug.WriteLine($"Successfully inserted cover image into {cbzFilePath}");
+                    Logger.Log($"Successfully inserted cover image into {cbzFilePath}", LogLevel.Info);
                     return true;
                 }
                 catch (Exception ex)
                 {
-                    Debug.WriteLine($"Error during archive operations: {ex.Message}");
+                    Logger.Log($"Error during archive operations: {ex.Message}", LogLevel.Error);
                     
                     // Clean up the temporary file if it exists
                     if (File.Exists(tempFilePath))
@@ -453,11 +527,11 @@ namespace MangaAssistant.Infrastructure.Services
                         try
                         {
                             File.Delete(tempFilePath);
-                            Debug.WriteLine($"Deleted temporary file after error: {tempFilePath}");
+                            Logger.Log($"Deleted temporary file after error: {tempFilePath}", LogLevel.Info);
                         }
                         catch (Exception cleanupEx)
                         {
-                            Debug.WriteLine($"Error cleaning up temporary file: {cleanupEx.Message}");
+                            Logger.Log($"Error cleaning up temporary file: {cleanupEx.Message}", LogLevel.Error);
                         }
                     }
                     
@@ -466,8 +540,8 @@ namespace MangaAssistant.Infrastructure.Services
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Error inserting cover image: {ex.Message}");
-                Debug.WriteLine($"Stack trace: {ex.StackTrace}");
+                Logger.Log($"Error inserting cover image: {ex.Message}", LogLevel.Error);
+                Logger.Log($"Stack trace: {ex.StackTrace}", LogLevel.Error);
                 return false;
             }
         }
@@ -526,8 +600,8 @@ namespace MangaAssistant.Infrastructure.Services
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Error scanning chapter: {ex.Message}");
-                Debug.WriteLine($"Stack trace: {ex.StackTrace}");
+                Logger.Log($"Error scanning chapter: {ex.Message}", LogLevel.Error);
+                Logger.Log($"Stack trace: {ex.StackTrace}", LogLevel.Error);
                 return null;
             }
         }
@@ -540,11 +614,11 @@ namespace MangaAssistant.Infrastructure.Services
             // Remove file extension and series name from consideration if possible
             string fileNameWithoutExtension = Path.GetFileNameWithoutExtension(fileName);
             
-            Debug.WriteLine($"Extracting chapter number from: {fileNameWithoutExtension}");
+            Logger.Log($"Extracting chapter number from: {fileNameWithoutExtension}", LogLevel.Info);
             
             // Get the directory name to help with context
             string directoryName = Path.GetFileName(Path.GetDirectoryName(filePath) ?? string.Empty);
-            Debug.WriteLine($"Series directory: {directoryName}");
+            Logger.Log($"Series directory: {directoryName}", LogLevel.Info);
             
             // Special case for Guyver manga - files are named like "Chapter XXX [Title].cbz"
             if (directoryName.Contains("Guyver", StringComparison.OrdinalIgnoreCase))
@@ -552,7 +626,7 @@ namespace MangaAssistant.Infrastructure.Services
                 var guyverMatch = Regex.Match(fileNameWithoutExtension, @"^Chapter\s*(\d+(?:\.\d+)?)", RegexOptions.IgnoreCase);
                 if (guyverMatch.Success && double.TryParse(guyverMatch.Groups[1].Value, out double guyverNumber))
                 {
-                    Debug.WriteLine($"Found Guyver chapter number: {guyverNumber}");
+                    Logger.Log($"Found Guyver chapter number: {guyverNumber}", LogLevel.Info);
                     return new Chapter
                     {
                         Id = Guid.NewGuid(),
@@ -577,7 +651,7 @@ namespace MangaAssistant.Infrastructure.Services
                 var match = pattern.Match(fileNameWithoutExtension);
                 if (match.Success && double.TryParse(match.Groups[1].Value, out double number))
                 {
-                    Debug.WriteLine($"Found chapter number {number} using pattern: {pattern}");
+                    Logger.Log($"Found chapter number {number} using pattern: {pattern}", LogLevel.Info);
                     return new Chapter
                     {
                         Id = Guid.NewGuid(),
@@ -597,7 +671,7 @@ namespace MangaAssistant.Infrastructure.Services
             if (Regex.IsMatch(fileNameWithoutExtension, @"^\d+(?:\.\d+)?$") && 
                 double.TryParse(fileNameWithoutExtension, out double simpleNumber))
             {
-                Debug.WriteLine($"Found simple chapter number: {simpleNumber}");
+                Logger.Log($"Found simple chapter number: {simpleNumber}", LogLevel.Info);
                 return new Chapter
                 {
                     Id = Guid.NewGuid(),
@@ -623,7 +697,7 @@ namespace MangaAssistant.Infrastructure.Services
                 if (directoryName.Contains(potentialSeriesName, StringComparison.OrdinalIgnoreCase) || 
                     potentialSeriesName.Contains(directoryName, StringComparison.OrdinalIgnoreCase))
                 {
-                    Debug.WriteLine($"Found chapter number {seriesNumber} after series name: {potentialSeriesName}");
+                    Logger.Log($"Found chapter number {seriesNumber} after series name: {potentialSeriesName}", LogLevel.Info);
                     return new Chapter
                     {
                         Id = Guid.NewGuid(),
@@ -649,7 +723,7 @@ namespace MangaAssistant.Infrastructure.Services
                 var dnaMatch = Regex.Match(fileNameWithoutExtension, @"DNA.*?(?:ch(?:apter)?|ep(?:isode)?)?[\s._-]*(\d+(?:\.\d+)?)", RegexOptions.IgnoreCase);
                 if (dnaMatch.Success && double.TryParse(dnaMatch.Groups[1].Value, out double dnaNumber))
                 {
-                    Debug.WriteLine($"Found DNA series chapter number: {dnaNumber}");
+                    Logger.Log($"Found DNA series chapter number: {dnaNumber}", LogLevel.Info);
                     return new Chapter
                     {
                         Id = Guid.NewGuid(),
@@ -673,7 +747,7 @@ namespace MangaAssistant.Infrastructure.Services
                 var killHeroMatch = Regex.Match(fileNameWithoutExtension, @"Kill.*?Hero.*?(?:ch(?:apter)?|ep(?:isode)?)?[\s._-]*(\d+(?:\.\d+)?)", RegexOptions.IgnoreCase);
                 if (killHeroMatch.Success && double.TryParse(killHeroMatch.Groups[1].Value, out double killHeroNumber))
                 {
-                    Debug.WriteLine($"Found Kill The Hero series chapter number: {killHeroNumber}");
+                    Logger.Log($"Found Kill The Hero series chapter number: {killHeroNumber}", LogLevel.Info);
                     return new Chapter
                     {
                         Id = Guid.NewGuid(),
@@ -699,7 +773,7 @@ namespace MangaAssistant.Infrastructure.Services
                 var guyverMatch = Regex.Match(fileNameWithoutExtension, @"(?:Bio.*?(?:Booster|Armor|Guyver)|Guyver).*?(?:ch(?:apter)?|ep(?:isode)?)?[\s._-]*(\d+(?:\.\d+)?)", RegexOptions.IgnoreCase);
                 if (guyverMatch.Success && double.TryParse(guyverMatch.Groups[1].Value, out double guyverNumber))
                 {
-                    Debug.WriteLine($"Found Bio Booster Armor Guyver series chapter number: {guyverNumber}");
+                    Logger.Log($"Found Bio Booster Armor Guyver series chapter number: {guyverNumber}", LogLevel.Info);
                     return new Chapter
                     {
                         Id = Guid.NewGuid(),
@@ -720,7 +794,7 @@ namespace MangaAssistant.Infrastructure.Services
             var lastNumberMatch = Regex.Match(fileNameWithoutExtension, @"[-_\s\.]+(\d+(?:\.\d+)?)(?:\.|$)");
             if (lastNumberMatch.Success && double.TryParse(lastNumberMatch.Groups[1].Value, out double lastNumber))
             {
-                Debug.WriteLine($"Using last number in filename as chapter: {lastNumber}");
+                Logger.Log($"Using last number in filename as chapter: {lastNumber}", LogLevel.Info);
                 return new Chapter
                 {
                     Id = Guid.NewGuid(),
@@ -735,7 +809,7 @@ namespace MangaAssistant.Infrastructure.Services
                 };
             }
             
-            Debug.WriteLine("No chapter number found, defaulting to 1");
+            Logger.Log("No chapter number found, defaulting to 1", LogLevel.Info);
             return new Chapter
             {
                 Id = Guid.NewGuid(),
@@ -756,7 +830,7 @@ namespace MangaAssistant.Infrastructure.Services
             // Priority 1: Use metadata file if it exists and has a series name
             if (metadata != null && !string.IsNullOrWhiteSpace(metadata.Series))
             {
-                Debug.WriteLine($"Using series title from metadata file: {metadata.Series}");
+                Logger.Log($"Using series title from metadata file: {metadata.Series}", LogLevel.Info);
                 return metadata.Series;
             }
 
@@ -768,19 +842,19 @@ namespace MangaAssistant.Infrastructure.Services
                     var comicInfo = await ExtractComicInfoAsync(cbzFile);
                     if (comicInfo != null && !string.IsNullOrWhiteSpace(comicInfo.Series))
                     {
-                        Debug.WriteLine($"Using series title from CBZ ComicInfo: {comicInfo.Series}");
+                        Logger.Log($"Using series title from CBZ ComicInfo: {comicInfo.Series}", LogLevel.Info);
                         return comicInfo.Series;
                     }
                 }
                 catch (Exception ex)
                 {
-                    Debug.WriteLine($"Error extracting ComicInfo from {cbzFile}: {ex.Message}");
+                    Logger.Log($"Error extracting ComicInfo from {cbzFile}: {ex.Message}", LogLevel.Error);
                     // Continue to the next file if there's an error
                 }
             }
 
             // Priority 3: Use folder name as a last resort
-            Debug.WriteLine($"Using folder name as series title: {folderName}");
+            Logger.Log($"Using folder name as series title: {folderName}", LogLevel.Info);
             return folderName;
         }
 
@@ -807,7 +881,7 @@ namespace MangaAssistant.Infrastructure.Services
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Error loading metadata: {ex.Message}");
+                Logger.Log($"Error loading metadata: {ex.Message}", LogLevel.Error);
                 return null;
             }
         }
@@ -862,15 +936,15 @@ namespace MangaAssistant.Infrastructure.Services
                     e.FullName.Equals("comicinfo.xml", StringComparison.OrdinalIgnoreCase) ||
                     e.FullName.Equals("ComicInfo.xml", StringComparison.OrdinalIgnoreCase));
 
-                System.Diagnostics.Debug.WriteLine($"Looking for ComicInfo.xml in {cbzPath}");
-                System.Diagnostics.Debug.WriteLine($"ComicInfo.xml found: {comicInfoEntry != null}");
+                Logger.Log($"Looking for ComicInfo.xml in {cbzPath}", LogLevel.Info);
+                Logger.Log($"ComicInfo.xml found: {comicInfoEntry != null}", LogLevel.Info);
 
                 if (comicInfoEntry != null)
                 {
                     using var stream = comicInfoEntry.Open();
                     using var reader = new StreamReader(stream);
                     var xmlContent = await reader.ReadToEndAsync();
-                    System.Diagnostics.Debug.WriteLine($"ComicInfo.xml content: {xmlContent}");
+                    Logger.Log($"ComicInfo.xml content: {xmlContent}", LogLevel.Info);
 
                     // Create XmlSerializer with XML namespace handling
                     var xmlOverrides = new XmlAttributeOverrides();
@@ -883,18 +957,18 @@ namespace MangaAssistant.Infrastructure.Services
 
                     using var stringReader = new StringReader(xmlContent);
                     var result = (ComicInfo?)serializer.Deserialize(stringReader);
-                    System.Diagnostics.Debug.WriteLine($"ComicInfo deserialized: {result != null}");
+                    Logger.Log($"ComicInfo deserialized: {result != null}", LogLevel.Info);
                     if (result != null)
                     {
-                        System.Diagnostics.Debug.WriteLine($"Series: {result.Series}, Title: {result.Title}, Number: {result.Number}, PageCount: {result.PageCount}");
+                        Logger.Log($"Series: {result.Series}, Title: {result.Title}, Number: {result.Number}, PageCount: {result.PageCount}", LogLevel.Info);
                     }
                     return result;
                 }
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Error extracting ComicInfo: {ex.Message}");
-                System.Diagnostics.Debug.WriteLine($"Stack trace: {ex.StackTrace}");
+                Logger.Log($"Error extracting ComicInfo: {ex.Message}", LogLevel.Error);
+                Logger.Log($"Stack trace: {ex.StackTrace}", LogLevel.Error);
             }
 
             return null;
@@ -923,16 +997,25 @@ namespace MangaAssistant.Infrastructure.Services
         // Add a public method to insert covers into all first chapters
         public async Task InsertCoversIntoFirstChaptersAsync(List<Series> seriesList)
         {
-            Debug.WriteLine($"Starting cover insertion for {seriesList.Count} series. Setting enabled: {_settingsService.InsertCoverIntoFirstChapter}");
+            Logger.Log($"Starting cover insertion for {seriesList.Count} series. Setting enabled: {_settingsService.InsertCoverIntoFirstChapter}", LogLevel.Info);
             
             if (!_settingsService.InsertCoverIntoFirstChapter)
             {
-                Debug.WriteLine("Cover insertion setting is disabled. Skipping process.");
+                Logger.Log("Cover insertion setting is disabled. Skipping process.", LogLevel.Info);
                 return;
             }
             
             // Use our CoverInsertionUtility to process all covers
             await Utilities.CoverInsertionUtility.ProcessAllSeriesCoversAsync(seriesList);
+        }
+
+        /// <summary>
+        /// Raises the ScanProgressChanged event
+        /// </summary>
+        /// <param name="e">The event arguments</param>
+        protected virtual void OnScanProgressChanged(ScanProgressChangedEventArgs e)
+        {
+            ScanProgressChanged?.Invoke(this, e);
         }
     }
 } 

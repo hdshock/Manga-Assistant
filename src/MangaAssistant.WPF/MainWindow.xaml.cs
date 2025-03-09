@@ -35,21 +35,70 @@ public partial class MainWindow : Window
         // Generate placeholder image
         PlaceholderGenerator.CreatePlaceholder();
         
-        // Initialize view model locator
-        ViewModelLocator.Initialize();
+        // Set the data context
         DataContext = ViewModelLocator.MainViewModel;
+
+        // Create the library view
+        var libraryView = new ScrollViewer
+        {
+            VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
+            HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled
+        };
+        
+        var itemsControl = new ItemsControl();
+        itemsControl.SetBinding(ItemsControl.ItemsSourceProperty, new Binding("Series"));
+        
+        var itemsPanelTemplate = new ItemsPanelTemplate();
+        var wrapPanelFactory = new FrameworkElementFactory(typeof(WrapPanel));
+        wrapPanelFactory.SetValue(WrapPanel.MarginProperty, new Thickness(15));
+        itemsPanelTemplate.VisualTree = wrapPanelFactory;
+        itemsControl.ItemsPanel = itemsPanelTemplate;
+        
+        var dataTemplate = new DataTemplate();
+        var mangaCardFactory = new FrameworkElementFactory(typeof(MangaCard));
+        mangaCardFactory.SetValue(MangaCard.WidthProperty, 133.0);
+        mangaCardFactory.SetValue(MangaCard.HeightProperty, 186.0);
+        mangaCardFactory.SetValue(MangaCard.MarginProperty, new Thickness(8));
+        mangaCardFactory.SetBinding(MangaCard.TitleProperty, new Binding("Title"));
+        mangaCardFactory.SetBinding(MangaCard.ProgressProperty, new Binding("Progress"));
+        mangaCardFactory.SetBinding(MangaCard.CoverSourceProperty, new Binding("CoverPath") { Converter = Resources["PathToImageSourceConverter"] as IValueConverter });
+        mangaCardFactory.SetBinding(MangaCard.UnreadChaptersProperty, new Binding("ChapterCount"));
+        mangaCardFactory.SetBinding(MangaCard.SeriesFolderPathProperty, new Binding("FolderPath") { Mode = BindingMode.OneWay });
+        
+        // Add event handlers
+        mangaCardFactory.AddHandler(
+            MangaCard.SeriesClickedEvent, 
+            new RoutedEventHandler(MangaCard_SeriesClicked));
+        mangaCardFactory.AddHandler(
+            MangaCard.MetadataUpdateRequestedEvent, 
+            new RoutedEventHandler(MangaCard_MetadataUpdateRequested));
+        
+        dataTemplate.VisualTree = mangaCardFactory;
+        itemsControl.ItemTemplate = dataTemplate;
+        
+        libraryView.Content = itemsControl;
+        LibraryView = libraryView;
 
         // Initialize settings page
         _settingsPage = new SettingsPage(
             ViewModelLocator.MainViewModel.SettingsService,
             ViewModelLocator.MainViewModel.LibraryService);
+        
+        // Create settings container
+        SettingsContainer = new Grid();
         SettingsContainer.Children.Add(_settingsPage);
 
         // Initialize series page
-        _seriesPage = new SeriesPage(ViewModelLocator.MetadataService, ViewModelLocator.MainViewModel.LibraryService);
-        SeriesDetailContainer.Children.Add(_seriesPage);
+        _seriesPage = new SeriesPage(ViewModelLocator.MainViewModel.MetadataService, ViewModelLocator.MainViewModel.LibraryService);
         _seriesPage.HorizontalAlignment = HorizontalAlignment.Stretch;
         _seriesPage.VerticalAlignment = VerticalAlignment.Stretch;
+        
+        // Create series detail container
+        SeriesDetailContainer = new Grid();
+        SeriesDetailContainer.Children.Add(_seriesPage);
+
+        // Set initial view
+        MainContent.Content = LibraryView;
 
         // Initial scan
         _ = ViewModelLocator.MainViewModel.InitializeAsync();
@@ -66,17 +115,46 @@ public partial class MainWindow : Window
 
     private void LibraryView_Click(object sender, RoutedEventArgs e)
     {
-        // Just switch visibility without affecting the data
-        LibraryView.Visibility = Visibility.Visible;
-        SeriesDetailContainer.Visibility = Visibility.Collapsed;
-        SettingsContainer.Visibility = Visibility.Collapsed;
+        // Update active menu item
+        SetActiveMenuItem(LibraryViewButton);
+        
+        // Show library view in the main content
+        MainContent.Content = LibraryView;
     }
 
     private void Settings_Click(object sender, RoutedEventArgs e)
     {
-        LibraryView.Visibility = Visibility.Collapsed;
-        SeriesDetailContainer.Visibility = Visibility.Collapsed;
-        SettingsContainer.Visibility = Visibility.Visible;
+        // Update active menu item
+        SetActiveMenuItem(SettingsButton);
+        
+        // Show settings view in the main content
+        MainContent.Content = SettingsContainer;
+    }
+    
+    private void ScanLibrary_Click(object sender, RoutedEventArgs e)
+    {
+        // Start scanning the library
+        _ = ViewModelLocator.MainViewModel.RefreshLibraryAsync();
+        
+        // Show library view
+        LibraryView_Click(sender, e);
+    }
+    
+    private void ViewLogs_Click(object sender, RoutedEventArgs e)
+    {
+        // Create and show the log window
+        var logWindow = new MangaAssistant.WPF.Controls.LogWindow(this);
+        logWindow.ShowDialog();
+    }
+    
+    private void SetActiveMenuItem(Button activeButton)
+    {
+        // Reset all menu buttons
+        LibraryViewButton.Tag = null;
+        SettingsButton.Tag = null;
+        
+        // Set the active button
+        activeButton.Tag = "Active";
     }
 
     private void MangaCard_SeriesClicked(object sender, RoutedEventArgs e)
@@ -85,9 +163,7 @@ public partial class MainWindow : Window
             card.DataContext is Series series)
         {
             _seriesPage.LoadSeries(series);
-            LibraryView.Visibility = Visibility.Collapsed;
-            SettingsContainer.Visibility = Visibility.Collapsed;
-            SeriesDetailContainer.Visibility = Visibility.Visible;
+            MainContent.Content = SeriesDetailContainer;
         }
     }
 
@@ -99,65 +175,15 @@ public partial class MainWindow : Window
             // First load the series in the series page
             _seriesPage.LoadSeries(series);
             
-            // Then programmatically trigger the search metadata functionality
+            // Then trigger metadata search
             _seriesPage.SearchMetadata();
             
-            // Make the series page visible
-            LibraryView.Visibility = Visibility.Collapsed;
-            SettingsContainer.Visibility = Visibility.Collapsed;
-            SeriesDetailContainer.Visibility = Visibility.Visible;
+            // Show the series detail view
+            MainContent.Content = SeriesDetailContainer;
         }
     }
 
-    private void SearchBox_KeyDown(object sender, KeyEventArgs e)
-    {
-        // Only process when Enter key is pressed
-        if (e.Key == Key.Enter && !string.IsNullOrWhiteSpace(SearchBox.Text))
-        {
-            try
-            {
-                // Get the search query
-                string searchQuery = SearchBox.Text.Trim();
-                
-                // Log the search attempt
-                Console.WriteLine($"Searching for: {searchQuery}");
-                
-                // Filter the series collection based on the search query
-                // This is done on the UI thread to ensure thread safety
-                Application.Current.Dispatcher.Invoke(() => {
-                    if (DataContext is MainViewModel viewModel)
-                    {
-                        // Create a temporary collection for the filtered results
-                        var filteredSeries = viewModel.Series
-                            .Where(s => s.Title.Contains(searchQuery, StringComparison.OrdinalIgnoreCase))
-                            .ToList();
-                        
-                        // Clear and repopulate the observable collection on the UI thread
-                        viewModel.Series.Clear();
-                        foreach (var series in filteredSeries)
-                        {
-                            viewModel.Series.Add(series);
-                        }
-                        
-                        // Show a message if no results were found
-                        if (filteredSeries.Count == 0)
-                        {
-                            MessageBox.Show($"No series found matching '{searchQuery}'", 
-                                "No Results", MessageBoxButton.OK, MessageBoxImage.Information);
-                        }
-                    }
-                });
-            }
-            catch (Exception ex)
-            {
-                // Handle any exceptions that occur during the search
-                Application.Current.Dispatcher.Invoke(() => {
-                    MessageBox.Show($"Error during search: {ex.Message}", 
-                        "Search Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                });
-                Console.WriteLine($"Search error: {ex.Message}");
-                Console.WriteLine(ex.StackTrace);
-            }
-        }
-    }
+    private ScrollViewer LibraryView { get; }
+    private Grid SeriesDetailContainer { get; }
+    private Grid SettingsContainer { get; }
 }

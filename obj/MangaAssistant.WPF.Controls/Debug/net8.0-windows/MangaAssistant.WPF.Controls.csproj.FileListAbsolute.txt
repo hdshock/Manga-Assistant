@@ -56,3 +56,5 @@ C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\obj\MangaAssistant.WPF.C
 C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\obj\MangaAssistant.WPF.Controls\Debug\net8.0-windows\ChapterCard.g.cs
 C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\obj\MangaAssistant.WPF.Controls\Debug\net8.0-windows\ChapterCard.baml
 C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\obj\MangaAssistant.WPF.Controls\Debug\net8.0-windows\ChapterList.baml
+C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\obj\MangaAssistant.WPF.Controls\Debug\net8.0-windows\LogWindow.baml
+C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\obj\MangaAssistant.WPF.Controls\Debug\net8.0-windows\LogWindow.g.cs

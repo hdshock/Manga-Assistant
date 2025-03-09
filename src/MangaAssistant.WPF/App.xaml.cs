@@ -4,6 +4,10 @@ using System.Data;
 using System.Windows;
 using MangaAssistant.WPF.ViewModels;
 using System.Threading.Tasks;
+using System.IO;
+using MangaAssistant.Core.Services;
+using MangaAssistant.Infrastructure.Services;
+using MangaAssistant.Common.Logging;
 
 namespace MangaAssistant.WPF;
 
@@ -16,22 +20,57 @@ public partial class App : System.Windows.Application
     {
         base.OnStartup(e);
 
-        // Initialize ViewModelLocator
-        ViewModelLocator.Initialize();
-
-        // Start initial library scan in the background
-        Task.Run(async () =>
+        // Initialize logger
+        string appDataPath = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+            "MangaAssistant");
+            
+        if (!Directory.Exists(appDataPath))
         {
-            try
+            Directory.CreateDirectory(appDataPath);
+        }
+        
+        Logger.Initialize(appDataPath);
+        Logger.Log("Application starting", LogLevel.Info);
+        
+        // Initialize services
+        var settingsService = new SettingsService();
+        var libraryScanner = new LibraryScanner(settingsService);
+        var libraryService = new LibraryService(settingsService, libraryScanner);
+        var metadataService = new MetadataService(libraryService);
+
+        // Register services with the ViewModelLocator
+        ViewModelLocator.RegisterServices(libraryService, settingsService, metadataService);
+
+        // Initialize the main view model
+        try
+        {
+            // Ensure the application directory exists
+            if (!Directory.Exists(appDataPath))
             {
-                await ViewModelLocator.MainViewModel.InitializeAsync();
+                Directory.CreateDirectory(appDataPath);
+                Logger.Log($"Created application directory: {appDataPath}", LogLevel.Info);
             }
-            catch (Exception ex)
+
+            // Initialize the main view model
+            _ = Task.Run(async () =>
             {
-                // Log error but don't show message box since we're in a background thread
-                System.Diagnostics.Debug.WriteLine($"Error during initial library scan: {ex.Message}");
-            }
-        });
+                try
+                {
+                    await ViewModelLocator.MainViewModel.InitializeAsync();
+                    Logger.Log("Main view model initialized successfully", LogLevel.Info);
+                }
+                catch (Exception ex)
+                {
+                    Logger.Log($"Error during initial library scan: {ex.Message}", LogLevel.Error);
+                }
+            });
+        }
+        catch (Exception ex)
+        {
+            Logger.Log($"Error during application startup: {ex.Message}", LogLevel.Error);
+            MessageBox.Show($"Error during application startup: {ex.Message}", "Startup Error", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
     }
 
     protected override void OnExit(ExitEventArgs e)

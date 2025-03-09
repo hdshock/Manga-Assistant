@@ -7,8 +7,9 @@ using MangaAssistant.Core.Services;
 using System.Text.Json;
 using System.IO;
 using System.Linq;
-using MangaAssistant.Infrastructure.Services.EventArgs;
 using System.Diagnostics;
+using MangaAssistant.Core;
+using System.Windows;
 
 namespace MangaAssistant.Infrastructure.Services
 {
@@ -25,10 +26,10 @@ namespace MangaAssistant.Infrastructure.Services
         private bool _isScanning = false;
         private readonly object _seriesLock = new();
 
-        public event EventHandler<LibraryUpdatedEventArgs>? LibraryUpdated;
+        public event EventHandler<Core.LibraryUpdatedEventArgs>? LibraryUpdated;
         public event EventHandler<Series>? SeriesAdded;
         public event PropertyChangedEventHandler? PropertyChanged;
-        public event EventHandler<ScanProgressEventArgs>? ScanProgress;
+        public event EventHandler<Core.ScanProgressEventArgs>? ScanProgress;
 
         public LibraryScanner LibraryScanner => _libraryScanner;
 
@@ -43,7 +44,7 @@ namespace MangaAssistant.Infrastructure.Services
                 {
                     SeriesAdded?.Invoke(this, series);
                 }
-                LibraryUpdated?.Invoke(this, new LibraryUpdatedEventArgs(_series));
+                LibraryUpdated?.Invoke(this, new Core.LibraryUpdatedEventArgs(_series));
             }
         }
 
@@ -102,72 +103,59 @@ namespace MangaAssistant.Infrastructure.Services
             };
         }
 
-        public async Task<bool> LoadLibraryCacheAsync()
+        public async Task LoadLibraryCacheAsync()
+        {
+            await LoadLibraryCacheInternalAsync();
+        }
+        
+        private async Task<bool> LoadLibraryCacheInternalAsync()
         {
             try
             {
-                Debug.WriteLine($"Attempting to load cache from {CachePath}");
-                if (string.IsNullOrWhiteSpace(_settingsService.LibraryPath) || !File.Exists(CachePath))
+                string cachePath = CachePath;
+                if (!File.Exists(cachePath))
                 {
-                    Debug.WriteLine("Cache file doesn't exist or library path not set");
+                    Debug.WriteLine($"Cache file not found at {cachePath}");
                     return false;
                 }
 
-                var json = await File.ReadAllTextAsync(CachePath);
-                var options = CreateJsonOptions();
-                var cachedSeries = JsonSerializer.Deserialize<List<Series>>(json, options);
-                
-                if (cachedSeries != null)
+                string json = await File.ReadAllTextAsync(cachePath);
+                var cachedSeries = JsonSerializer.Deserialize<List<Series>>(json, _jsonOptions);
+                if (cachedSeries == null)
                 {
-                    Debug.WriteLine($"Loaded {cachedSeries.Count} series from cache");
-                    // Verify each series still exists and load its metadata
-                    var validSeries = new List<Series>();
+                    Debug.WriteLine("Failed to deserialize cache");
+                    return false;
+                }
+
+                // Update the series list with cached series
+                lock (_seriesLock)
+                {
+                    _series.Clear();
                     foreach (var series in cachedSeries)
                     {
                         if (Directory.Exists(series.FolderPath))
                         {
-                            Debug.WriteLine($"Verifying series: {series.Title} at {series.FolderPath}");
-                            // Load metadata if it exists
-                            var metadata = await LoadSeriesMetadataAsync(series.FolderPath);
-                            if (metadata != null)
-                            {
-                                Debug.WriteLine($"Loaded metadata for {series.Title}");
-                                series.Metadata = metadata;
-                            }
-                            validSeries.Add(series);
-                        }
-                        else
-                        {
-                            Debug.WriteLine($"Series directory no longer exists: {series.FolderPath}");
+                            _series.Add(series);
                         }
                     }
-
-                    if (validSeries.Any())
-                    {
-                        Debug.WriteLine($"Found {validSeries.Count} valid series");
-                        lock (_seriesLock)
-                        {
-                            _series = validSeries;
-                            foreach (var series in _series)
-                            {
-                                SeriesAdded?.Invoke(this, series);
-                            }
-                        }
-                        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Series)));
-                        LibraryUpdated?.Invoke(this, new LibraryUpdatedEventArgs(_series));
-                        return true;
-                    }
+                    _series = _series.OrderBy(s => s.Title).ToList();
                 }
+
+                // Notify all listeners that the library is updated
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Series)));
+                LibraryUpdated?.Invoke(this, new Core.LibraryUpdatedEventArgs(_series));
+
+                Debug.WriteLine($"Loaded {_series.Count} series from cache");
+                return true;
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Error loading library cache: {ex.Message}");
-                Debug.WriteLine($"Stack trace: {ex.StackTrace}");
+                Debug.WriteLine($"Error loading cache: {ex.Message}");
+                return false;
             }
-            return false;
         }
 
-        private async Task SaveLibraryCacheAsync()
+        public async Task SaveLibraryCacheAsync()
         {
             try
             {
@@ -262,19 +250,33 @@ namespace MangaAssistant.Infrastructure.Services
                     Debug.WriteLine($"Final series count: {_series.Count}");
                 }
 
+                // Process cover insertion if the setting is enabled
+                if (_settingsService.InsertCoverIntoFirstChapter)
+                {
+                    Debug.WriteLine("Cover insertion setting is enabled. Processing covers...");
+                    await _libraryScanner.InsertCoversIntoFirstChaptersAsync(_series);
+                }
+                else
+                {
+                    Debug.WriteLine("Cover insertion setting is disabled. Skipping cover processing.");
+                }
+
                 // Save updated library to cache
                 await SaveLibraryCacheAsync();
                 Debug.WriteLine("Saved library cache");
 
                 // Notify that library is updated
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Series)));
-                LibraryUpdated?.Invoke(this, new LibraryUpdatedEventArgs(_series));
-                Debug.WriteLine("Sent library updated notifications");
+                LibraryUpdated?.Invoke(this, new Core.LibraryUpdatedEventArgs(_series));
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error scanning library: {ex.Message}");
+                Debug.WriteLine($"Stack trace: {ex.StackTrace}");
             }
             finally
             {
                 _isScanning = false;
-                Debug.WriteLine("Scan complete");
             }
         }
 
@@ -326,7 +328,7 @@ namespace MangaAssistant.Infrastructure.Services
 
                 // Notify all listeners that the library is cleared
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Series)));
-                LibraryUpdated?.Invoke(this, new LibraryUpdatedEventArgs(new List<Series>()));
+                LibraryUpdated?.Invoke(this, new Core.LibraryUpdatedEventArgs(new List<Series>()));
 
                 await Task.CompletedTask;
             }
@@ -418,12 +420,12 @@ namespace MangaAssistant.Infrastructure.Services
 
         private void OnLibraryUpdated(List<Series> series)
         {
-            LibraryUpdated?.Invoke(this, new LibraryUpdatedEventArgs(series));
+            LibraryUpdated?.Invoke(this, new Core.LibraryUpdatedEventArgs(series));
         }
 
         private void OnScanProgress(double progress, string seriesTitle, int scannedDirectories, int totalDirectories)
         {
-            ScanProgress?.Invoke(this, new ScanProgressEventArgs(
+            ScanProgress?.Invoke(this, new Core.ScanProgressEventArgs(
                 progress,
                 seriesTitle,
                 scannedDirectories,
@@ -439,6 +441,48 @@ namespace MangaAssistant.Infrastructure.Services
                 ".jpg" or ".jpeg" or ".png" or ".webp" or ".gif" => true,
                 _ => false
             };
+        }
+
+        public async Task ProcessAllCoversAsync()
+        {
+            Debug.WriteLine("Starting process to insert covers into first chapters for all series");
+            
+            if (!_settingsService.InsertCoverIntoFirstChapter)
+            {
+                Debug.WriteLine("Cover insertion setting is disabled. Skipping process.");
+                return;
+            }
+            
+            try
+            {
+                // Use the UI thread for updating UI components
+                await Application.Current.Dispatcher.InvokeAsync(async () =>
+                {
+                    try
+                    {
+                        // Get a snapshot of the current series list to avoid threading issues
+                        List<Series> seriesList;
+                        lock (_seriesLock)
+                        {
+                            seriesList = new List<Series>(_series);
+                        }
+                        
+                        Debug.WriteLine($"Processing covers for {seriesList.Count} series");
+                        await _libraryScanner.InsertCoversIntoFirstChaptersAsync(seriesList);
+                        Debug.WriteLine("Cover processing completed successfully");
+                    }
+                    catch (Exception ex)
+                    {
+                        Debug.WriteLine($"Error during cover processing on UI thread: {ex.Message}");
+                        Debug.WriteLine($"Stack trace: {ex.StackTrace}");
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error initiating cover processing: {ex.Message}");
+                Debug.WriteLine($"Stack trace: {ex.StackTrace}");
+            }
         }
     }
 } 

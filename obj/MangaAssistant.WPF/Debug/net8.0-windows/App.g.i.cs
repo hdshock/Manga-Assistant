@@ -60,7 +60,7 @@ namespace MangaAssistant.WPF {
             
             #line default
             #line hidden
-            System.Uri resourceLocater = new System.Uri("/MangaAssistant.WPF;V1.0.0.0;component/app.xaml", System.UriKind.Relative);
+            System.Uri resourceLocater = new System.Uri("/MangaAssistant.WPF;component/app.xaml", System.UriKind.Relative);
             
             #line 1 "..\..\..\..\src\MangaAssistant.WPF\App.xaml"
             System.Windows.Application.LoadComponent(this, resourceLocater);

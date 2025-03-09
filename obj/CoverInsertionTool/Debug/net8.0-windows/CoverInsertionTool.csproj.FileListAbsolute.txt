@@ -1,0 +1,17 @@
+C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\bin\CoverInsertionTool\Debug\net8.0-windows\CoverInsertionTool.exe
+C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\bin\CoverInsertionTool\Debug\net8.0-windows\CoverInsertionTool.deps.json
+C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\bin\CoverInsertionTool\Debug\net8.0-windows\CoverInsertionTool.runtimeconfig.json
+C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\bin\CoverInsertionTool\Debug\net8.0-windows\CoverInsertionTool.dll
+C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\bin\CoverInsertionTool\Debug\net8.0-windows\CoverInsertionTool.pdb
+C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\obj\CoverInsertionTool\Debug\net8.0-windows\CoverInsertionTool.csproj.AssemblyReference.cache
+C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\obj\CoverInsertionTool\Debug\net8.0-windows\CoverInsertionTool.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\obj\CoverInsertionTool\Debug\net8.0-windows\CoverInsertionTool.AssemblyInfoInputs.cache
+C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\obj\CoverInsertionTool\Debug\net8.0-windows\CoverInsertionTool.AssemblyInfo.cs
+C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\obj\CoverInsertionTool\Debug\net8.0-windows\CoverInsertionTool.csproj.CoreCompileInputs.cache
+C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\obj\CoverInsertionTool\Debug\net8.0-windows\CoverInsertionTool.sourcelink.json
+C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\obj\CoverInsertionTool\Debug\net8.0-windows\CoverIns.6040F43E.Up2Date
+C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\obj\CoverInsertionTool\Debug\net8.0-windows\CoverInsertionTool.dll
+C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\obj\CoverInsertionTool\Debug\net8.0-windows\refint\CoverInsertionTool.dll
+C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\obj\CoverInsertionTool\Debug\net8.0-windows\CoverInsertionTool.pdb
+C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\obj\CoverInsertionTool\Debug\net8.0-windows\CoverInsertionTool.genruntimeconfig.cache
+C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\obj\CoverInsertionTool\Debug\net8.0-windows\ref\CoverInsertionTool.dll

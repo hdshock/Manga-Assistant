@@ -1,0 +1,15 @@
+C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\bin\CoverInserterApp\Debug\net8.0-windows\CoverInserterApp.exe
+C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\bin\CoverInserterApp\Debug\net8.0-windows\CoverInserterApp.deps.json
+C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\bin\CoverInserterApp\Debug\net8.0-windows\CoverInserterApp.runtimeconfig.json
+C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\bin\CoverInserterApp\Debug\net8.0-windows\CoverInserterApp.dll
+C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\bin\CoverInserterApp\Debug\net8.0-windows\CoverInserterApp.pdb
+C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\obj\CoverInserterApp\Debug\net8.0-windows\CoverInserterApp.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\obj\CoverInserterApp\Debug\net8.0-windows\CoverInserterApp.AssemblyInfoInputs.cache
+C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\obj\CoverInserterApp\Debug\net8.0-windows\CoverInserterApp.AssemblyInfo.cs
+C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\obj\CoverInserterApp\Debug\net8.0-windows\CoverInserterApp.csproj.CoreCompileInputs.cache
+C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\obj\CoverInserterApp\Debug\net8.0-windows\CoverInserterApp.sourcelink.json
+C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\obj\CoverInserterApp\Debug\net8.0-windows\CoverInserterApp.dll
+C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\obj\CoverInserterApp\Debug\net8.0-windows\refint\CoverInserterApp.dll
+C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\obj\CoverInserterApp\Debug\net8.0-windows\CoverInserterApp.pdb
+C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\obj\CoverInserterApp\Debug\net8.0-windows\CoverInserterApp.genruntimeconfig.cache
+C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\obj\CoverInserterApp\Debug\net8.0-windows\ref\CoverInserterApp.dll

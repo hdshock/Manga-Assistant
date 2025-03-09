@@ -1,19 +1,20 @@
 using System;
-using System.Collections.ObjectModel;
-using System.Threading.Tasks;
-using System.Windows.Input;
-using MangaAssistant.Core.Models;
-using MangaAssistant.Core.ViewModels;
-using MangaAssistant.Core.Commands;
-using MangaAssistant.Core.Services;
-using MangaAssistant.Infrastructure.Services;
-using System.Windows;
-using System.Windows.Threading;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Input;
+using System.Windows.Threading;
+using MangaAssistant.Core;
+using MangaAssistant.Core.Commands;
+using MangaAssistant.Core.Models;
+using MangaAssistant.Core.Services;
+using MangaAssistant.Core.ViewModels;
+using MangaAssistant.Infrastructure.Services;
 using MangaAssistant.Infrastructure.Services.EventArgs;
-using System.Diagnostics;
 
 namespace MangaAssistant.WPF.ViewModels
 {
@@ -161,8 +162,11 @@ namespace MangaAssistant.WPF.ViewModels
                 if (_libraryService is LibraryService service)
                 {
                     Debug.WriteLine("Loading from cache");
-                    var cacheLoaded = await service.LoadLibraryCacheAsync();
-                    Debug.WriteLine($"Cache loaded: {cacheLoaded}, Series count: {Series.Count}");
+                    await service.LoadLibraryCacheAsync();
+                    
+                    // Always scan the library to ensure we have the latest data
+                    await service.ScanLibraryAsync();
+                    Debug.WriteLine($"Cache loaded, Series count: {Series.Count}");
             
                     // Start background scan without clearing UI
                     _scanCancellationSource = new CancellationTokenSource();
@@ -286,7 +290,7 @@ namespace MangaAssistant.WPF.ViewModels
             }
         }
 
-        private void OnScanProgressChanged(object? sender, ScanProgressEventArgs e)
+        private void OnScanProgressChanged(object? sender, Infrastructure.Services.EventArgs.ScanProgressEventArgs e)
         {
             Application.Current.Dispatcher.BeginInvoke(new Action(() =>
             {
@@ -294,6 +298,7 @@ namespace MangaAssistant.WPF.ViewModels
                 CurrentScanningSeries = e.CurrentSeriesTitle;
                 ScannedSeries = e.ScannedDirectories;
                 TotalSeries = e.TotalDirectories;
+                Debug.WriteLine($"Scan progress: {e.Progress:F2}%, {e.ScannedDirectories}/{e.TotalDirectories}");
             }), DispatcherPriority.Background);
         }
 
@@ -327,7 +332,7 @@ namespace MangaAssistant.WPF.ViewModels
             }), DispatcherPriority.Background);
         }
 
-        private void OnLibraryUpdated(object? sender, LibraryUpdatedEventArgs e)
+        private void OnLibraryUpdated(object? sender, Core.LibraryUpdatedEventArgs e)
         {
             Debug.WriteLine($"Library updated event received, series count: {e.Series?.Count ?? 0}");
             Application.Current.Dispatcher.BeginInvoke(new Action(() =>

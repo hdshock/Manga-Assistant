@@ -1,0 +1,15 @@
+C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\bin\DirectCoverInserter\Debug\net8.0\DirectCoverInserter.exe
+C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\bin\DirectCoverInserter\Debug\net8.0\DirectCoverInserter.deps.json
+C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\bin\DirectCoverInserter\Debug\net8.0\DirectCoverInserter.runtimeconfig.json
+C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\bin\DirectCoverInserter\Debug\net8.0\DirectCoverInserter.dll
+C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\bin\DirectCoverInserter\Debug\net8.0\DirectCoverInserter.pdb
+C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\obj\DirectCoverInserter\Debug\net8.0\DirectCoverInserter.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\obj\DirectCoverInserter\Debug\net8.0\DirectCoverInserter.AssemblyInfoInputs.cache
+C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\obj\DirectCoverInserter\Debug\net8.0\DirectCoverInserter.AssemblyInfo.cs
+C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\obj\DirectCoverInserter\Debug\net8.0\DirectCoverInserter.csproj.CoreCompileInputs.cache
+C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\obj\DirectCoverInserter\Debug\net8.0\DirectCoverInserter.sourcelink.json
+C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\obj\DirectCoverInserter\Debug\net8.0\DirectCoverInserter.dll
+C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\obj\DirectCoverInserter\Debug\net8.0\refint\DirectCoverInserter.dll
+C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\obj\DirectCoverInserter\Debug\net8.0\DirectCoverInserter.pdb
+C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\obj\DirectCoverInserter\Debug\net8.0\DirectCoverInserter.genruntimeconfig.cache
+C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\obj\DirectCoverInserter\Debug\net8.0\ref\DirectCoverInserter.dll

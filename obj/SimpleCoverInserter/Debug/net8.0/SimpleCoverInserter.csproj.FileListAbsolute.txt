@@ -1,0 +1,15 @@
+C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\bin\SimpleCoverInserter\Debug\net8.0\SimpleCoverInserter.exe
+C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\bin\SimpleCoverInserter\Debug\net8.0\SimpleCoverInserter.deps.json
+C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\bin\SimpleCoverInserter\Debug\net8.0\SimpleCoverInserter.runtimeconfig.json
+C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\bin\SimpleCoverInserter\Debug\net8.0\SimpleCoverInserter.dll
+C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\bin\SimpleCoverInserter\Debug\net8.0\SimpleCoverInserter.pdb
+C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\obj\SimpleCoverInserter\Debug\net8.0\SimpleCoverInserter.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\obj\SimpleCoverInserter\Debug\net8.0\SimpleCoverInserter.AssemblyInfoInputs.cache
+C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\obj\SimpleCoverInserter\Debug\net8.0\SimpleCoverInserter.AssemblyInfo.cs
+C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\obj\SimpleCoverInserter\Debug\net8.0\SimpleCoverInserter.csproj.CoreCompileInputs.cache
+C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\obj\SimpleCoverInserter\Debug\net8.0\SimpleCoverInserter.sourcelink.json
+C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\obj\SimpleCoverInserter\Debug\net8.0\SimpleCoverInserter.dll
+C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\obj\SimpleCoverInserter\Debug\net8.0\refint\SimpleCoverInserter.dll
+C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\obj\SimpleCoverInserter\Debug\net8.0\SimpleCoverInserter.pdb
+C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\obj\SimpleCoverInserter\Debug\net8.0\SimpleCoverInserter.genruntimeconfig.cache
+C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\obj\SimpleCoverInserter\Debug\net8.0\ref\SimpleCoverInserter.dll

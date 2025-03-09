@@ -1,0 +1,15 @@
+C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\bin\FixKillTheHero\Debug\net8.0\FixKillTheHero.exe
+C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\bin\FixKillTheHero\Debug\net8.0\FixKillTheHero.deps.json
+C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\bin\FixKillTheHero\Debug\net8.0\FixKillTheHero.runtimeconfig.json
+C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\bin\FixKillTheHero\Debug\net8.0\FixKillTheHero.dll
+C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\bin\FixKillTheHero\Debug\net8.0\FixKillTheHero.pdb
+C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\obj\FixKillTheHero\Debug\net8.0\FixKillTheHero.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\obj\FixKillTheHero\Debug\net8.0\FixKillTheHero.AssemblyInfoInputs.cache
+C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\obj\FixKillTheHero\Debug\net8.0\FixKillTheHero.AssemblyInfo.cs
+C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\obj\FixKillTheHero\Debug\net8.0\FixKillTheHero.csproj.CoreCompileInputs.cache
+C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\obj\FixKillTheHero\Debug\net8.0\FixKillTheHero.sourcelink.json
+C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\obj\FixKillTheHero\Debug\net8.0\FixKillTheHero.dll
+C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\obj\FixKillTheHero\Debug\net8.0\refint\FixKillTheHero.dll
+C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\obj\FixKillTheHero\Debug\net8.0\FixKillTheHero.pdb
+C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\obj\FixKillTheHero\Debug\net8.0\FixKillTheHero.genruntimeconfig.cache
+C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\obj\FixKillTheHero\Debug\net8.0\ref\FixKillTheHero.dll

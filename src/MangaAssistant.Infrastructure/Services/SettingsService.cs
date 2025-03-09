@@ -9,6 +9,7 @@ namespace MangaAssistant.Infrastructure.Services
     {
         private const string SettingsFileName = "settings.json";
         private string _libraryPath = string.Empty;  // Initialize with empty string
+        private bool _insertCoverIntoFirstChapter = false;  // Default to false
 
         public string LibraryPath
         {
@@ -16,6 +17,16 @@ namespace MangaAssistant.Infrastructure.Services
             set
             {
                 _libraryPath = value ?? string.Empty;  // Handle null values
+                SaveSettings();
+            }
+        }
+
+        public bool InsertCoverIntoFirstChapter
+        {
+            get => _insertCoverIntoFirstChapter;
+            set
+            {
+                _insertCoverIntoFirstChapter = value;
                 SaveSettings();
             }
         }
@@ -29,7 +40,8 @@ namespace MangaAssistant.Infrastructure.Services
         {
             var settings = new
             {
-                LibraryPath = _libraryPath
+                LibraryPath = _libraryPath,
+                InsertCoverIntoFirstChapter = _insertCoverIntoFirstChapter
             };
 
             var json = JsonSerializer.Serialize(settings);
@@ -57,13 +69,24 @@ namespace MangaAssistant.Infrastructure.Services
                     var json = File.ReadAllText(appDataPath);
                     var settings = JsonSerializer.Deserialize<JsonElement>(json);
                     _libraryPath = settings.GetProperty("LibraryPath").GetString() ?? string.Empty;
+                    
+                    // Try to get the InsertCoverIntoFirstChapter property, default to false if not found
+                    if (settings.TryGetProperty("InsertCoverIntoFirstChapter", out var insertCoverProperty))
+                    {
+                        _insertCoverIntoFirstChapter = insertCoverProperty.GetBoolean();
+                    }
+                    else
+                    {
+                        _insertCoverIntoFirstChapter = false;
+                    }
                 }
             }
             catch
             {
                 // If loading fails, use defaults
                 _libraryPath = string.Empty;
+                _insertCoverIntoFirstChapter = false;
             }
         }
     }
-} 
+}

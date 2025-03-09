@@ -3,11 +3,17 @@ using System.Xml.Serialization;
 
 namespace MangaAssistant.Core.Models
 {
-    [XmlRoot("ComicInfo")]
+    [XmlRoot("ComicInfo", Namespace = "")]
     public class ComicInfo
     {
         [XmlElement("Series")]
         public string? Series { get; set; }
+
+        [XmlElement("LocalizedSeries")]
+        public string? LocalizedSeries { get; set; }
+
+        [XmlElement("SeriesSort")]
+        public string? SeriesSort { get; set; }
 
         [XmlElement("Title")]
         public string? Title { get; set; }
@@ -30,23 +36,65 @@ namespace MangaAssistant.Core.Models
         [XmlElement("Month")]
         public int? Month { get; set; }
 
+        [XmlElement("Day")]
+        public int? Day { get; set; }
+
         [XmlElement("Writer")]
         public string? Writer { get; set; }
+
+        [XmlElement("Penciller")]
+        public string? Penciller { get; set; }
+
+        [XmlElement("Inker")]
+        public string? Inker { get; set; }
+
+        [XmlElement("Colorist")]
+        public string? Colorist { get; set; }
+
+        [XmlElement("Letterer")]
+        public string? Letterer { get; set; }
+
+        [XmlElement("CoverArtist")]
+        public string? CoverArtist { get; set; }
+
+        [XmlElement("Editor")]
+        public string? Editor { get; set; }
+
+        [XmlElement("Translator")]
+        public string? Translator { get; set; }
 
         [XmlElement("Publisher")]
         public string? Publisher { get; set; }
 
+        [XmlElement("Imprint")]
+        public string? Imprint { get; set; }
+
         [XmlElement("Genre")]
         public string? Genre { get; set; }
 
+        [XmlElement("Tags")]
+        public string? Tags { get; set; }
+
+        [XmlElement("Web")]
+        public string? Web { get; set; }
+
         [XmlElement("PageCount")]
         public int PageCount { get; set; }
+
+        [XmlElement("LanguageISO")]
+        public string? LanguageISO { get; set; }
+
+        [XmlElement("Format")]
+        public string? Format { get; set; }
+
+        [XmlElement("AgeRating")]
+        public string? AgeRating { get; set; }
 
         [XmlElement("Count")]
         public string? Count { get; set; }
 
         [XmlElement("Manga")]
-        public string? Manga { get; set; }
+        public YesNo Manga { get; set; }
 
         [XmlElement("Characters")]
         public string? Characters { get; set; }
@@ -57,7 +105,20 @@ namespace MangaAssistant.Core.Models
         [XmlElement("Locations")]
         public string? Locations { get; set; }
 
+        [XmlElement("ScanInformation")]
+        public string? ScanInformation { get; set; }
+
         [XmlElement("CommunityRating")]
         public float? CommunityRating { get; set; }
+
+        [XmlElement("GTIN")]
+        public string? GTIN { get; set; }
+    }
+
+    public enum YesNo
+    {
+        Unknown = 0,
+        No = 1,
+        Yes = 2
     }
 } 

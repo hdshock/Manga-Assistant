@@ -6,6 +6,7 @@ using System.IO.Compression;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using System.Xml;
 using System.Xml.Serialization;
 using System.Text.Json;
 using MangaAssistant.Core.Models;
@@ -108,11 +109,11 @@ namespace MangaAssistant.Infrastructure.Services
             try
             {
                 // Check if a scan is already in progress
-                if (_isScanning)
-                {
+            if (_isScanning)
+            {
                     Logger.Log("Scan already in progress, ignoring request", LogLevel.Warning);
                     return new ScanResult { Success = false, Message = "Scan already in progress" };
-                }
+            }
 
                 // Acquire the scan lock to prevent multiple scans
                 await _scanLock.WaitAsync(cancellationToken);
@@ -133,9 +134,9 @@ namespace MangaAssistant.Infrastructure.Services
                 Logger.Log($"Starting library scan at: {libraryPath}", LogLevel.Info);
 
                 // Get all directories in the library path
-                var directories = Directory.GetDirectories(libraryPath);
-                _totalDirectories = directories.Length;
-                _scannedDirectories = 0;
+            var directories = Directory.GetDirectories(libraryPath);
+            _totalDirectories = directories.Length;
+            _scannedDirectories = 0;
 
                 Logger.Log($"Found {_totalDirectories} directories to scan", LogLevel.Info);
 
@@ -144,23 +145,23 @@ namespace MangaAssistant.Infrastructure.Services
                 var tasks = new List<Task<Series?>>();
 
                 // Process each directory in batches
-                foreach (var directory in directories)
-                {
+            foreach (var directory in directories)
+            {
                     // Check if the scan has been cancelled
                     if (linkedToken.IsCancellationRequested)
-                    {
+                {
                         Logger.Log("Scan cancelled by user", LogLevel.Warning);
-                        break;
-                    }
+                    break;
+                }
 
                     // Wait for a slot in the semaphore
                     await _scanSemaphore.WaitAsync(linkedToken);
-
+                
                     // Start a task to process the directory
-                    tasks.Add(Task.Run(async () =>
+                tasks.Add(Task.Run(async () =>
+                {
+                    try
                     {
-                        try
-                        {
                             // Process the directory
                             var series = await ProcessDirectoryAsync(directory, linkedToken);
                             return series;
@@ -176,7 +177,7 @@ namespace MangaAssistant.Infrastructure.Services
                             _scanSemaphore.Release();
                             
                             // Update the progress
-                            Interlocked.Increment(ref _scannedDirectories);
+                        Interlocked.Increment(ref _scannedDirectories);
                             
                             // Raise the progress event
                             OnScanProgressChanged(new ScanProgressChangedEventArgs
@@ -218,14 +219,14 @@ namespace MangaAssistant.Infrastructure.Services
             {
                 Logger.Log("Scan was cancelled", LogLevel.Warning);
                 return new ScanResult { Success = false, Message = "Scan was cancelled" };
-            }
-            catch (Exception ex)
-            {
+                    }
+                    catch (Exception ex)
+                    {
                 Logger.Log($"Error during library scan: {ex.Message}", LogLevel.Error);
                 return new ScanResult { Success = false, Message = $"Error during scan: {ex.Message}" };
-            }
-            finally
-            {
+                    }
+                    finally
+                    {
                 // Reset the scanning state
                 _isScanning = false;
                 _scanCancellationSource?.Dispose();
@@ -314,7 +315,7 @@ namespace MangaAssistant.Infrastructure.Services
                 Logger.Log($"Metadata status: {(existingMetadata != null ? "Found" : "Not found")}", 
                     LogLevel.Info, "LibraryScanner", directoryPath,
                     new Dictionary<string, string>
-                    {
+                {
                         { "HasMetadata", (existingMetadata != null).ToString() },
                         { "SeriesName", seriesName }
                     });
@@ -446,8 +447,8 @@ namespace MangaAssistant.Infrastructure.Services
                         }
 
                         if (isNewChapter)
-                        {
-                            chapters.Add(chapter);
+                    {
+                        chapters.Add(chapter);
                             Logger.Log($"Added chapter {chapter.Number} for {series.Title} from file: {Path.GetFileName(chapter.FilePath)}", LogLevel.Info);
                         }
                         else
@@ -477,20 +478,20 @@ namespace MangaAssistant.Infrastructure.Services
                     Logger.Log($"Cover insertion setting is enabled. Looking for first chapter in {series.Title}", LogLevel.Info);
                     var firstChapter = sortedChapters[0];
                     Logger.Log($"Found first chapter: {firstChapter.Title}, Number: {firstChapter.Number}", LogLevel.Info);
-                    string coverPath = Path.Combine(series.FolderPath, "cover.jpg");
+                        string coverPath = Path.Combine(series.FolderPath, "cover.jpg");
                     Logger.Log($"Looking for cover image at: {coverPath}", LogLevel.Info);
-                    if (File.Exists(coverPath))
-                    {
+                        if (File.Exists(coverPath))
+                        {
                         Logger.Log($"Cover image found. Attempting to insert into: {firstChapter.FilePath}", LogLevel.Info);
-                        await InsertCoverIntoChapterAsync(firstChapter.FilePath, coverPath);
+                            await InsertCoverIntoChapterAsync(firstChapter.FilePath, coverPath);
+                        }
+                        else
+                        {
+                        Logger.Log($"Cover image not found at: {coverPath}", LogLevel.Info);
+                        }
                     }
                     else
                     {
-                        Logger.Log($"Cover image not found at: {coverPath}", LogLevel.Info);
-                    }
-                }
-                else
-                {
                     Logger.Log($"Cover insertion setting is disabled or no chapters found. Setting: {_settingsService.InsertCoverIntoFirstChapter}, Chapters: {sortedChapters.Count}", LogLevel.Info);
                 }
 
@@ -532,8 +533,8 @@ namespace MangaAssistant.Infrastructure.Services
 
                 try
                 {
-                    // Read the cover image into memory
-                    byte[] coverImageBytes = await File.ReadAllBytesAsync(coverImagePath);
+                // Read the cover image into memory
+                byte[] coverImageBytes = await File.ReadAllBytesAsync(coverImagePath);
                     Logger.Log($"Read cover image, size: {coverImageBytes.Length} bytes", LogLevel.Info);
 
                     // Create a new archive with the cover image as the first file
@@ -617,10 +618,10 @@ namespace MangaAssistant.Infrastructure.Services
         private async Task<Chapter?> CreateChapterFromFileAsync(string filePath, Guid seriesId)
         {
             try
-            {
-                var fileInfo = new FileInfo(filePath);
-                var fileName = Path.GetFileNameWithoutExtension(filePath);
-                
+        {
+            var fileInfo = new FileInfo(filePath);
+            var fileName = Path.GetFileNameWithoutExtension(filePath);
+            
                 Logger.Log($"Processing chapter file", LogLevel.Info, "ChapterProcessing", filePath);
                 
                 // First try to extract metadata from ComicInfo.xml
@@ -670,13 +671,13 @@ namespace MangaAssistant.Infrastructure.Services
         private Chapter CreateChapterFromMetadata(string filePath, Guid seriesId, double chapterNumber, ComicInfo comicInfo)
         {
             var fileInfo = new FileInfo(filePath);
-            return new Chapter
-            {
-                Id = Guid.NewGuid(),
-                SeriesId = seriesId,
-                FilePath = filePath,
-                Added = fileInfo.CreationTime,
-                LastRead = DateTime.MinValue,
+                    return new Chapter
+                    {
+                        Id = Guid.NewGuid(),
+                        SeriesId = seriesId,
+                        FilePath = filePath,
+                        Added = fileInfo.CreationTime,
+                        LastRead = DateTime.MinValue,
                 Number = chapterNumber,
                 Volume = !string.IsNullOrWhiteSpace(comicInfo.Volume) && int.TryParse(comicInfo.Volume, out int vol) ? vol : 0,
                 Title = !string.IsNullOrWhiteSpace(comicInfo.Title) ? comicInfo.Title : Path.GetFileNameWithoutExtension(filePath),
@@ -710,20 +711,20 @@ namespace MangaAssistant.Infrastructure.Services
                     { "Source", "FileName" }
                 });
             
-            return new Chapter
-            {
-                Id = Guid.NewGuid(),
-                SeriesId = seriesId,
-                FilePath = filePath,
-                Added = fileInfo.CreationTime,
-                LastRead = DateTime.MinValue,
+                return new Chapter
+                {
+                    Id = Guid.NewGuid(),
+                    SeriesId = seriesId,
+                    FilePath = filePath,
+                    Added = fileInfo.CreationTime,
+                    LastRead = DateTime.MinValue,
                 Number = chapterNumber,
                 Volume = volumeNumber,
-                Title = fileName,
-                PageCount = 0
-            };
-        }
-        
+                    Title = fileName,
+                    PageCount = 0
+                };
+            }
+            
         private string NormalizeFileName(string fileName)
         {
             // First protect decimal numbers by temporarily replacing them
@@ -973,46 +974,206 @@ namespace MangaAssistant.Infrastructure.Services
             {
                 using var fileStream = File.OpenRead(cbzPath);
                 using var archive = new ZipArchive(fileStream, ZipArchiveMode.Read);
+                
+                // Look for ComicInfo.xml with case-insensitive search
                 var comicInfoEntry = archive.Entries.FirstOrDefault(e => 
-                    e.FullName.Equals("comicinfo.xml", StringComparison.OrdinalIgnoreCase) ||
-                    e.FullName.Equals("ComicInfo.xml", StringComparison.OrdinalIgnoreCase));
+                    e.FullName.Equals("comicinfo.xml", StringComparison.OrdinalIgnoreCase));
 
-                Logger.Log($"Looking for ComicInfo.xml in {cbzPath}", LogLevel.Info);
-                Logger.Log($"ComicInfo.xml found: {comicInfoEntry != null}", LogLevel.Info);
+                if (comicInfoEntry == null)
+                {
+                    Logger.Log($"No ComicInfo.xml found in {cbzPath}", LogLevel.Debug, "LibraryScanner");
+                    return null;
+                }
 
-                if (comicInfoEntry != null)
+                try
                 {
                     using var stream = comicInfoEntry.Open();
                     using var reader = new StreamReader(stream);
                     var xmlContent = await reader.ReadToEndAsync();
-                    Logger.Log($"ComicInfo.xml content: {xmlContent}", LogLevel.Info);
 
-                    // Create XmlSerializer with XML namespace handling
+                    // Pre-process XML content
+                    xmlContent = PreProcessXmlContent(xmlContent);
+
+                    // Create XML settings that match Kavita's expectations
+                    var xmlSettings = new XmlReaderSettings
+                    {
+                        IgnoreWhitespace = true,
+                        IgnoreComments = true,
+                        IgnoreProcessingInstructions = true,
+                        CheckCharacters = false,
+                        DtdProcessing = DtdProcessing.Ignore,
+                        ValidationType = ValidationType.None,
+                        ConformanceLevel = ConformanceLevel.Auto
+                    };
+
+                    // Create XmlSerializer with flexible namespace handling
                     var xmlOverrides = new XmlAttributeOverrides();
                     var xmlRootAttr = new XmlRootAttribute("ComicInfo")
                     {
-                        Namespace = "",
+                        Namespace = string.Empty,
                         IsNullable = true
                     };
-                    var serializer = new XmlSerializer(typeof(ComicInfo), xmlOverrides, Array.Empty<Type>(), xmlRootAttr, "");
+
+                    var serializer = new XmlSerializer(typeof(ComicInfo), xmlOverrides, Array.Empty<Type>(), xmlRootAttr, string.Empty);
 
                     using var stringReader = new StringReader(xmlContent);
-                    var result = (ComicInfo?)serializer.Deserialize(stringReader);
-                    Logger.Log($"ComicInfo deserialized: {result != null}", LogLevel.Info);
+                    using var xmlReader = XmlReader.Create(stringReader, xmlSettings);
+
+                    var result = (ComicInfo?)serializer.Deserialize(xmlReader);
+
                     if (result != null)
                     {
-                        Logger.Log($"Series: {result.Series}, Title: {result.Title}, Number: {result.Number}, PageCount: {result.PageCount}", LogLevel.Info);
+                        // Normalize data to match Kavita's expectations
+                        NormalizeComicInfo(result);
+                        Logger.Log($"Successfully parsed ComicInfo.xml from {Path.GetFileName(cbzPath)}", LogLevel.Debug, "LibraryScanner",
+                            Path.GetFileName(cbzPath));
                     }
+                    else
+                    {
+                        Logger.Log($"ComicInfo.xml was empty or invalid in {Path.GetFileName(cbzPath)}", LogLevel.Debug, "LibraryScanner");
+                    }
+
                     return result;
                 }
+                catch (InvalidOperationException iex) when (iex.Message.Contains("There is an error in XML document"))
+                {
+                    Logger.Log($"XML format error in ComicInfo.xml for {cbzPath}: {iex.Message}", LogLevel.Warning, "LibraryScanner");
+                    return AttemptFallbackParsing(cbzPath);
+                }
+                catch (XmlException xex)
+                {
+                    Logger.Log($"XML parsing error in ComicInfo.xml for {cbzPath}: {xex.Message}", LogLevel.Warning, "LibraryScanner");
+                    return AttemptFallbackParsing(cbzPath);
+                }
+            }
+            catch (InvalidDataException idex) when (idex.Message.Contains("End of Central Directory"))
+            {
+                Logger.Log($"Corrupted ZIP archive {cbzPath}: {idex.Message}", LogLevel.Error, "LibraryScanner");
+                return null;
             }
             catch (Exception ex)
             {
-                Logger.Log($"Error extracting ComicInfo: {ex.Message}", LogLevel.Error);
-                Logger.Log($"Stack trace: {ex.StackTrace}", LogLevel.Error);
+                Logger.Log($"Error extracting ComicInfo from {cbzPath}: {ex.Message}", LogLevel.Error, "LibraryScanner",
+                    Path.GetFileName(cbzPath));
+                return null;
+            }
+        }
+
+        private string PreProcessXmlContent(string xmlContent)
+        {
+            // Remove any invalid characters
+            xmlContent = Regex.Replace(xmlContent, @"[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]", string.Empty);
+            
+            // Fix common XML issues
+            xmlContent = Regex.Replace(xmlContent, @"&(?!amp;|lt;|gt;|apos;|quot;)", "&amp;"); // Fix unescaped ampersands
+            xmlContent = Regex.Replace(xmlContent, @"[\u0000-\u0008\u000B\u000C\u000E-\u001F]", string.Empty); // Remove control chars
+            
+            // Normalize line endings
+            xmlContent = xmlContent.Replace("\r\n", "\n").Replace("\r", "\n");
+            
+            // Remove BOM if present
+            if (xmlContent.StartsWith("\uFEFF"))
+                xmlContent = xmlContent.Substring(1);
+        
+            return xmlContent;
+        }
+
+        private void NormalizeComicInfo(ComicInfo info)
+        {
+            // Normalize Number field
+            if (!string.IsNullOrWhiteSpace(info.Number))
+            {
+                info.Number = info.Number.Trim().Replace(',', '.');
+                // Remove leading zeros while preserving decimal numbers
+                if (info.Number.Contains('.'))
+                {
+                    var parts = info.Number.Split('.');
+                    info.Number = int.Parse(parts[0]).ToString() + "." + parts[1];
+                }
+                else
+                {
+                    info.Number = int.Parse(info.Number).ToString();
+                }
+            }
+            
+            // Normalize Series field
+            if (!string.IsNullOrWhiteSpace(info.Series))
+            {
+                info.Series = info.Series.Trim();
             }
 
-            return null;
+            // Normalize Volume field
+            if (!string.IsNullOrWhiteSpace(info.Volume))
+            {
+                info.Volume = info.Volume.Trim();
+                if (info.Volume.StartsWith("v", StringComparison.OrdinalIgnoreCase))
+                {
+                    info.Volume = info.Volume.Substring(1);
+                }
+            }
+
+            // Normalize Genre field
+            if (!string.IsNullOrWhiteSpace(info.Genre))
+            {
+                // Split by commas and clean up each genre
+                var genres = info.Genre.Split(new[] { ',', ';' }, StringSplitOptions.RemoveEmptyEntries)
+                    .Select(g => g.Trim())
+                    .Where(g => !string.IsNullOrWhiteSpace(g))
+                    .Distinct();
+                info.Genre = string.Join(", ", genres);
+            }
+
+            // Normalize LanguageISO field
+            if (!string.IsNullOrWhiteSpace(info.LanguageISO))
+            {
+                info.LanguageISO = info.LanguageISO.Trim().ToLowerInvariant();
+            }
+        }
+
+        private ComicInfo? AttemptFallbackParsing(string cbzPath)
+        {
+            try
+            {
+                using var fileStream = File.OpenRead(cbzPath);
+                using var archive = new ZipArchive(fileStream, ZipArchiveMode.Read);
+                var comicInfoEntry = archive.Entries.FirstOrDefault(e => 
+                    e.FullName.Equals("comicinfo.xml", StringComparison.OrdinalIgnoreCase));
+
+                if (comicInfoEntry == null) return null;
+
+                using var stream = comicInfoEntry.Open();
+                using var reader = new StreamReader(stream);
+                var xmlContent = reader.ReadToEnd();
+
+                // Try to extract basic information using regex patterns
+                var info = new ComicInfo();
+                
+                // Extract Series
+                var seriesMatch = Regex.Match(xmlContent, @"<Series[^>]*>(.*?)</Series>");
+                if (seriesMatch.Success) info.Series = seriesMatch.Groups[1].Value.Trim();
+
+                // Extract Number
+                var numberMatch = Regex.Match(xmlContent, @"<Number[^>]*>(.*?)</Number>");
+                if (numberMatch.Success) info.Number = numberMatch.Groups[1].Value.Trim();
+
+                // Extract Volume
+                var volumeMatch = Regex.Match(xmlContent, @"<Volume[^>]*>(.*?)</Volume>");
+                if (volumeMatch.Success) info.Volume = volumeMatch.Groups[1].Value.Trim();
+
+                if (!string.IsNullOrWhiteSpace(info.Series) || !string.IsNullOrWhiteSpace(info.Number))
+                {
+                    Logger.Log($"Successfully extracted basic info using fallback method from {Path.GetFileName(cbzPath)}", 
+                        LogLevel.Info, "LibraryScanner");
+                    return info;
+                }
+
+                return null;
+            }
+            catch (Exception ex)
+            {
+                Logger.Log($"Fallback parsing failed for {cbzPath}: {ex.Message}", LogLevel.Error, "LibraryScanner");
+                return null;
+            }
         }
 
         private bool IsImageFile(string fileName)
@@ -1046,8 +1207,37 @@ namespace MangaAssistant.Infrastructure.Services
                 return;
             }
             
-            // Use our CoverInsertionUtility to process all covers
-            await Utilities.CoverInsertionUtility.ProcessAllSeriesCoversAsync(seriesList);
+            foreach (var series in seriesList)
+            {
+                try
+                {
+                    if (series.Chapters == null || !series.Chapters.Any())
+                    {
+                        Logger.Log($"No chapters found for series: {series.Title}", LogLevel.Warning);
+                        continue;
+                    }
+
+                    var firstChapter = series.Chapters.OrderBy(c => c.Number).FirstOrDefault();
+                    if (firstChapter == null)
+                    {
+                        Logger.Log($"Could not determine first chapter for series: {series.Title}", LogLevel.Warning);
+                        continue;
+                    }
+
+                    string coverPath = Path.Combine(series.FolderPath, "cover.jpg");
+                    if (!File.Exists(coverPath))
+                    {
+                        Logger.Log($"Cover image not found for series: {series.Title}", LogLevel.Warning);
+                        continue;
+                    }
+
+                    await InsertCoverIntoChapterAsync(firstChapter.FilePath, coverPath);
+                }
+                catch (Exception ex)
+                {
+                    Logger.Log($"Error processing cover for series {series.Title}: {ex.Message}", LogLevel.Error);
+                }
+            }
         }
 
         /// <summary>

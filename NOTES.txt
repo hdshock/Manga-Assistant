@@ -483,3 +483,51 @@ Implementation Notes:
 - Include appropriate context and tags
 - Monitor log performance impact
 - Regular log cleanup for memory management
+
+## Best Practices
+
+### Trust but Verify Principle
+- Always verify assumptions and claims about code functionality
+- Test changes after making them, don't assume they work
+- Build and run the application after making changes
+- Check logs and error messages for unexpected behavior
+- When fixing errors, verify that the fix addresses the root cause, not just the symptoms
+- Document verification steps taken and their results
+
+### Logging System
+- Uses structured logging with categories and levels
+- Log levels: DEBUG, INFO, WARNING, ERROR, CRITICAL
+- Includes context and metadata for better debugging
+- File-based logging with rotation
+- Consistent logging format across the application
+- Logs are stored in user's AppData directory
+
+### Error Handling
+- Use try-catch blocks for expected exceptions
+- Log all errors with appropriate context
+- Handle cleanup in finally blocks
+- Graceful degradation when possible
+- Provide user-friendly error messages
+
+### Code Organization
+- Keep code modular and maintainable
+- Use clear naming conventions
+- Document complex logic
+- Follow SOLID principles
+- Use dependency injection where appropriate
+
+### Performance Considerations
+- Batch operations when possible
+- Use async/await for I/O operations
+- Implement proper disposal of resources
+- Monitor memory usage
+- Cache frequently accessed data
+
+### Build Process
+- Build solution before committing changes
+- Address compiler warnings
+- Verify all projects build successfully
+- Check for runtime errors
+- Test main functionality after builds
+
+Remember to update these notes as new patterns or issues are discovered.

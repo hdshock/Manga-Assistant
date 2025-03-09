@@ -1,12 +1,11 @@
 using System;
-using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
 using System.Threading.Tasks;
-using System.Windows;
 using MangaAssistant.Core.Models;
 using System.Linq;
 using System.Collections.Generic;
+using MangaAssistant.Common.Logging;
 
 namespace MangaAssistant.Infrastructure.Utilities
 {
@@ -19,7 +18,7 @@ namespace MangaAssistant.Infrastructure.Utilities
         {
             if (allSeries == null || !allSeries.Any())
             {
-                Debug.WriteLine("No series found to process covers");
+                Logger.Log("No series found to process covers", LogLevel.Warning);
                 return;
             }
 
@@ -31,12 +30,12 @@ namespace MangaAssistant.Infrastructure.Utilities
             {
                 try
                 {
-                    Debug.WriteLine($"Processing covers for series: {series.Title}");
+                    Logger.Log($"Processing covers for series: {series.Title}", LogLevel.Info);
                     
                     // Skip if no chapters
                     if (series.Chapters == null || !series.Chapters.Any())
                     {
-                        Debug.WriteLine($"Series has no chapters: {series.Title}");
+                        Logger.Log($"Series has no chapters: {series.Title}", LogLevel.Warning);
                         skippedCount++;
                         continue;
                     }
@@ -45,7 +44,7 @@ namespace MangaAssistant.Infrastructure.Utilities
                     var firstChapter = series.Chapters.OrderBy(c => c.Number).FirstOrDefault();
                     if (firstChapter == null)
                     {
-                        Debug.WriteLine($"Could not determine first chapter for series: {series.Title}");
+                        Logger.Log($"Could not determine first chapter for series: {series.Title}", LogLevel.Warning);
                         skippedCount++;
                         continue;
                     }
@@ -54,7 +53,7 @@ namespace MangaAssistant.Infrastructure.Utilities
                     string coverPath = Path.Combine(series.FolderPath, "cover.jpg");
                     if (!File.Exists(coverPath))
                     {
-                        Debug.WriteLine($"Cover image not found for series: {series.Title}");
+                        Logger.Log($"Cover image not found for series: {series.Title}", LogLevel.Warning);
                         skippedCount++;
                         continue;
                     }
@@ -64,23 +63,23 @@ namespace MangaAssistant.Infrastructure.Utilities
                     if (success)
                     {
                         successCount++;
-                        Debug.WriteLine($"Successfully processed cover for series: {series.Title}");
+                        Logger.Log($"Successfully processed cover for series: {series.Title}", LogLevel.Info);
                     }
                     else
                     {
                         errorCount++;
-                        Debug.WriteLine($"Failed to process cover for series: {series.Title}");
+                        Logger.Log($"Failed to process cover for series: {series.Title}", LogLevel.Error);
                     }
                 }
                 catch (Exception ex)
                 {
                     errorCount++;
-                    Debug.WriteLine($"Error processing cover for series {series.Title}: {ex.Message}");
+                    Logger.Log($"Error processing cover for series {series.Title}: {ex.Message}", LogLevel.Error);
                 }
             }
 
             // Log summary
-            Debug.WriteLine($"Cover processing complete. Success: {successCount}, Errors: {errorCount}, Skipped: {skippedCount}");
+            Logger.Log($"Cover processing complete. Success: {successCount}, Errors: {errorCount}, Skipped: {skippedCount}", LogLevel.Info);
         }
 
         /// <summary>
@@ -95,17 +94,17 @@ namespace MangaAssistant.Infrastructure.Utilities
             
             try
             {
-                Debug.WriteLine($"Starting cover insertion for: {cbzFilePath}");
+                Logger.Log($"Starting cover insertion for: {cbzFilePath}", LogLevel.Info);
                 
                 if (!File.Exists(cbzFilePath))
                 {
-                    Debug.WriteLine($"CBZ file does not exist: {cbzFilePath}");
+                    Logger.Log($"CBZ file does not exist: {cbzFilePath}", LogLevel.Error);
                     return false;
                 }
                 
                 if (!File.Exists(coverImagePath))
                 {
-                    Debug.WriteLine($"Cover image does not exist: {coverImagePath}");
+                    Logger.Log($"Cover image does not exist: {coverImagePath}", LogLevel.Error);
                     return false;
                 }
                 
@@ -115,41 +114,41 @@ namespace MangaAssistant.Infrastructure.Utilities
                     $"temp_{Path.GetFileName(cbzFilePath)}"
                 );
                 
-                Debug.WriteLine($"Created temporary file at: {tempFilePath}");
+                Logger.Log($"Created temporary file at: {tempFilePath}", LogLevel.Debug);
 
                 // Read the cover image into memory
                 byte[] coverImageBytes = await File.ReadAllBytesAsync(coverImagePath);
-                Debug.WriteLine($"Read cover image, size: {coverImageBytes.Length} bytes");
+                Logger.Log($"Read cover image, size: {coverImageBytes.Length} bytes", LogLevel.Debug);
 
                 // Create a new archive with the cover image as the first file
                 using (var tempFileStream = File.Create(tempFilePath))
                 using (var tempArchive = new ZipArchive(tempFileStream, ZipArchiveMode.Create, true))
                 {
-                    // Add cover image as the first file with name "cover.jpg" for Kavita compatibility
+                    // Add cover image as the first file
                     var coverEntry = tempArchive.CreateEntry("cover.jpg");
                     using (var entryStream = coverEntry.Open())
                     {
                         await entryStream.WriteAsync(coverImageBytes, 0, coverImageBytes.Length);
-                        Debug.WriteLine("Added cover image to temporary archive");
+                        Logger.Log("Added cover image to temporary archive", LogLevel.Debug);
                     }
 
                     // Copy all entries from the original archive
-                    Debug.WriteLine($"Opening original archive: {cbzFilePath}");
+                    Logger.Log($"Opening original archive: {cbzFilePath}", LogLevel.Debug);
                     using (var originalFileStream = File.OpenRead(cbzFilePath))
                     using (var originalArchive = new ZipArchive(originalFileStream, ZipArchiveMode.Read))
                     {
-                        Debug.WriteLine($"Original archive has {originalArchive.Entries.Count} entries");
+                        Logger.Log($"Original archive has {originalArchive.Entries.Count} entries", LogLevel.Debug);
                         foreach (var entry in originalArchive.Entries)
                         {
                             // Skip if it's already a cover image with the same name
                             if (entry.Name.Equals("cover.jpg", StringComparison.OrdinalIgnoreCase))
                             {
-                                Debug.WriteLine($"Skipping existing cover image: {entry.Name}");
+                                Logger.Log($"Skipping existing cover image: {entry.Name}", LogLevel.Debug);
                                 continue;
                             }
 
                             // Copy the entry to the new archive
-                            Debug.WriteLine($"Copying entry: {entry.Name}");
+                            Logger.Log($"Copying entry: {entry.Name}", LogLevel.Debug);
                             var newEntry = tempArchive.CreateEntry(entry.Name);
                             using (var originalEntryStream = entry.Open())
                             using (var newEntryStream = newEntry.Open())
@@ -161,17 +160,16 @@ namespace MangaAssistant.Infrastructure.Utilities
                 }
 
                 // Replace the original file with the new one
-                Debug.WriteLine($"Deleting original file: {cbzFilePath}");
+                Logger.Log($"Replacing original file: {cbzFilePath}", LogLevel.Debug);
                 File.Delete(cbzFilePath);
-                Debug.WriteLine($"Moving temporary file to original location");
                 File.Move(tempFilePath, cbzFilePath);
 
-                Debug.WriteLine($"Successfully inserted cover image into {cbzFilePath}");
+                Logger.Log($"Successfully inserted cover image into {cbzFilePath}", LogLevel.Info);
                 return true;
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Error during cover insertion: {ex.Message}");
+                Logger.Log($"Error during cover insertion: {ex.Message}", LogLevel.Error);
                 
                 // Clean up the temporary file if it exists
                 if (tempFilePath != null && File.Exists(tempFilePath))
@@ -179,11 +177,11 @@ namespace MangaAssistant.Infrastructure.Utilities
                     try
                     {
                         File.Delete(tempFilePath);
-                        Debug.WriteLine($"Deleted temporary file after error: {tempFilePath}");
+                        Logger.Log($"Deleted temporary file after error: {tempFilePath}", LogLevel.Debug);
                     }
                     catch (Exception cleanupEx)
                     {
-                        Debug.WriteLine($"Error cleaning up temporary file: {cleanupEx.Message}");
+                        Logger.Log($"Error cleaning up temporary file: {cleanupEx.Message}", LogLevel.Error);
                     }
                 }
                 

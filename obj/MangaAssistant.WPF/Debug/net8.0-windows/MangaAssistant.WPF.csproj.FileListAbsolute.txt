@@ -31,13 +31,11 @@ C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\bin\MangaAssistant.WPF\D
 C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\obj\MangaAssistant.WPF\Debug\net8.0-windows\MangaAssistant.WPF.csproj.AssemblyReference.cache
 C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\obj\MangaAssistant.WPF\Debug\net8.0-windows\App.baml
 C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\obj\MangaAssistant.WPF\Debug\net8.0-windows\MainWindow.g.cs
-C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\obj\MangaAssistant.WPF\Debug\net8.0-windows\TestWindow.g.cs
 C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\obj\MangaAssistant.WPF\Debug\net8.0-windows\App.g.cs
 C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\obj\MangaAssistant.WPF\Debug\net8.0-windows\GeneratedInternalTypeHelper.g.cs
 C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\obj\MangaAssistant.WPF\Debug\net8.0-windows\MangaAssistant.WPF_MarkupCompile.cache
 C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\obj\MangaAssistant.WPF\Debug\net8.0-windows\MangaAssistant.WPF_MarkupCompile.lref
 C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\obj\MangaAssistant.WPF\Debug\net8.0-windows\MainWindow.baml
-C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\obj\MangaAssistant.WPF\Debug\net8.0-windows\TestWindow.baml
 C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\obj\MangaAssistant.WPF\Debug\net8.0-windows\MangaAssistant.WPF.g.resources
 C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\obj\MangaAssistant.WPF\Debug\net8.0-windows\MangaAssistant.WPF.GeneratedMSBuildEditorConfig.editorconfig
 C:\Users\jason.mesisco\Documents\GitHub\Manga-Assistant\obj\MangaAssistant.WPF\Debug\net8.0-windows\MangaAssistant.WPF.AssemblyInfoInputs.cache

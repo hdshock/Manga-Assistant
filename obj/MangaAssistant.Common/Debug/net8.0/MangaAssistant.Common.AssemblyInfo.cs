@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("MangaAssistant.Common")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+183c76e032dc67460053bc6dca8742aa403bc43a")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+11d54ca974ed67a34c41bdd8d3a394bfba980a5d")]
 [assembly: System.Reflection.AssemblyProductAttribute("MangaAssistant.Common")]
 [assembly: System.Reflection.AssemblyTitleAttribute("MangaAssistant.Common")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

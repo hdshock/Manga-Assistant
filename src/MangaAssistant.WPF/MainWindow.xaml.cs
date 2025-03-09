@@ -27,7 +27,6 @@ public partial class MainWindow : Window
 {
     private readonly SeriesPage _seriesPage;
     private readonly SettingsPage _settingsPage;
-    private TestWindow? _testWindow;
 
     public MainWindow()
     {
@@ -106,9 +105,6 @@ public partial class MainWindow : Window
 
         // Handle window closing
         Closing += MainWindow_Closing;
-
-        // Add key binding for test window (Ctrl+T)
-        KeyDown += MainWindow_KeyDown;
     }
 
     private void MainWindow_Closing(object? sender, System.ComponentModel.CancelEventArgs e)
@@ -184,23 +180,6 @@ public partial class MainWindow : Window
             
             // Show the series detail view
             MainContent.Content = SeriesDetailContainer;
-        }
-    }
-
-    private void MainWindow_KeyDown(object sender, KeyEventArgs e)
-    {
-        if (e.Key == Key.T && (Keyboard.Modifiers & ModifierKeys.Control) == ModifierKeys.Control)
-        {
-            if (_testWindow == null || !_testWindow.IsLoaded)
-            {
-                _testWindow = new TestWindow();
-                _testWindow.Owner = this;
-                _testWindow.Show();
-            }
-            else
-            {
-                _testWindow.Activate();
-            }
         }
     }
 

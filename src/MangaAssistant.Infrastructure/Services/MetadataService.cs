@@ -11,36 +11,39 @@ using MangaAssistant.Common.Logging;
 using MangaAssistant.Infrastructure.Logging;
 using MangaAssistant.Infrastructure.Services.Metadata;
 using System.Diagnostics;
+using System.Net.Http.Headers;
 
 namespace MangaAssistant.Infrastructure.Services
 {
     public class MetadataService : IMetadataService
     {
-        private readonly List<Core.Services.IMetadataProvider> _providers;
+        private readonly Dictionary<string, Core.Services.IMetadataProvider> _providers;
+        private readonly ISettingsService _settingsService;
         public ILibraryService LibraryService { get; }
 
-        public IReadOnlyList<Core.Services.IMetadataProvider> Providers => _providers.AsReadOnly();
+        public IReadOnlyList<Core.Services.IMetadataProvider> Providers => _providers.Values.ToList().AsReadOnly();
 
-        public MetadataService(ILibraryService libraryService)
+        public MetadataService(ILibraryService libraryService, ISettingsService settingsService)
         {
             LibraryService = libraryService ?? throw new ArgumentNullException(nameof(libraryService));
+            _settingsService = settingsService;
             
             // Create a logger adapter and HTTP client for providers
-            var logger = new MangaAssistant.Infrastructure.Logging.LoggerAdapter();
+            var logger = new LoggerAdapter();
             var httpClient = new HttpClient();
-            
-            // Configure HttpClient with appropriate headers and timeout
+            httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+            httpClient.DefaultRequestHeaders.UserAgent.ParseAdd("MangaAssistant/1.0");
             httpClient.Timeout = TimeSpan.FromSeconds(30);
             
-            _providers = new List<Core.Services.IMetadataProvider>
+            _providers = new Dictionary<string, Core.Services.IMetadataProvider>
             {
-                new AniListMetadataProvider(),
-                new MangaDexMetadataProvider(),
-                new MangaUpdatesMetadataProvider(httpClient, logger)
+                { "MangaDex", new MangaDexMetadataProvider(_settingsService) },
+                { "AniList", new AniListMetadataProvider(_settingsService) },
+                { "MangaUpdates", new MangaUpdatesMetadataProvider(httpClient, logger) }
             };
             
             Debug.WriteLine($"MetadataService initialized with {_providers.Count} providers:");
-            foreach (var provider in _providers)
+            foreach (var provider in _providers.Values)
             {
                 Debug.WriteLine($"- {provider.Name}");
             }
@@ -49,12 +52,9 @@ namespace MangaAssistant.Infrastructure.Services
         public async Task<IEnumerable<SeriesSearchResult>> SearchAsync(string providerName, string query)
         {
             Debug.WriteLine($"MetadataService.SearchAsync called with provider: '{providerName}', query: '{query}'");
-            Debug.WriteLine($"Available providers: {string.Join(", ", _providers.Select(p => p.Name))}");
+            Debug.WriteLine($"Available providers: {string.Join(", ", _providers.Values.Select(p => p.Name))}");
             
-            var provider = _providers.FirstOrDefault(p => 
-                string.Equals(p.Name, providerName, StringComparison.OrdinalIgnoreCase));
-                
-            if (provider == null)
+            if (!_providers.TryGetValue(providerName, out var provider))
             {
                 Debug.WriteLine($"Provider not found: {providerName}");
                 return Enumerable.Empty<SeriesSearchResult>();
@@ -80,10 +80,7 @@ namespace MangaAssistant.Infrastructure.Services
         {
             Debug.WriteLine($"MetadataService.GetMetadataAsync called with provider: '{providerName}', id: '{providerId}'");
             
-            var provider = _providers.FirstOrDefault(p => 
-                string.Equals(p.Name, providerName, StringComparison.OrdinalIgnoreCase));
-                
-            if (provider == null)
+            if (!_providers.TryGetValue(providerName, out var provider))
             {
                 Debug.WriteLine($"Provider not found: {providerName}");
                 return new SeriesMetadata();

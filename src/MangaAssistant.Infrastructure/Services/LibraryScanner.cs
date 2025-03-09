@@ -41,6 +41,7 @@ namespace MangaAssistant.Infrastructure.Services
         private int _scannedDirectories;
         private bool _isScanning;
         private CancellationTokenSource? _scanCancellationSource;
+        private readonly ConcurrentDictionary<string, (string Path, DateTime LastModified)> _coverCache = new();
 
         // Events
         public event EventHandler<Series>? SeriesFound;
@@ -193,7 +194,8 @@ namespace MangaAssistant.Infrastructure.Services
                     if (tasks.Count >= BATCH_SIZE)
                     {
                         var completedTasks = await Task.WhenAll(tasks);
-                        seriesList.AddRange(completedTasks.Where(s => s != null));
+                        var validSeries = completedTasks.Where(s => s != null).Select(s => s!).ToList();
+                        seriesList.AddRange(validSeries);
                         tasks.Clear();
                     }
                 }
@@ -202,7 +204,8 @@ namespace MangaAssistant.Infrastructure.Services
                 if (tasks.Count > 0)
                 {
                     var completedTasks = await Task.WhenAll(tasks);
-                    seriesList.AddRange(completedTasks.Where(s => s != null));
+                    var validSeries = completedTasks.Where(s => s != null).Select(s => s!).ToList();
+                    seriesList.AddRange(validSeries);
                 }
 
                 Logger.Log($"Scan completed. Found {seriesList.Count} series", LogLevel.Info);
@@ -283,21 +286,57 @@ namespace MangaAssistant.Infrastructure.Services
             ));
         }
 
-        private string[] FindCoverImages(string directoryPath)
+        private string GetSeriesCoverPath(string seriesPath)
         {
-            var coverFiles = new List<string>();
-            
-            // Look for cover files in the series directory
+            try
+            {
+                // Check if we have a valid cached cover
+                if (_coverCache.TryGetValue(seriesPath, out var cached))
+                {
+                    var coverFile = new FileInfo(cached.Path);
+                    if (coverFile.Exists && coverFile.LastWriteTime == cached.LastModified)
+                    {
+                        return cached.Path;
+                    }
+                }
+
+                // Look for cover.jpg first
+                var primaryCover = Path.Combine(seriesPath, "cover.jpg");
+                if (File.Exists(primaryCover))
+                {
+                    var fileInfo = new FileInfo(primaryCover);
+                    _coverCache[seriesPath] = (primaryCover, fileInfo.LastWriteTime);
+                    return primaryCover;
+                }
+
+                // Fall back to other cover patterns if needed
             foreach (var pattern in COVER_PATTERNS)
             {
-                var coverPath = Path.Combine(directoryPath, pattern);
+                    var coverPath = Path.Combine(seriesPath, pattern);
                 if (File.Exists(coverPath))
                 {
-                    coverFiles.Add(coverPath);
+                        var fileInfo = new FileInfo(coverPath);
+                        _coverCache[seriesPath] = (coverPath, fileInfo.LastWriteTime);
+                        return coverPath;
+                    }
                 }
-            }
 
-            return coverFiles.ToArray();
+                // Use placeholder if no cover found
+                var placeholderPath = Path.Combine(seriesPath, DEFAULT_PLACEHOLDER);
+                if (File.Exists(placeholderPath))
+                {
+                    var fileInfo = new FileInfo(placeholderPath);
+                    _coverCache[seriesPath] = (placeholderPath, fileInfo.LastWriteTime);
+                    return placeholderPath;
+                }
+
+                return string.Empty;
+            }
+            catch (Exception ex)
+            {
+                Logger.Log($"Error getting series cover path: {ex.Message}", LogLevel.Error, "LibraryScanner");
+                return string.Empty;
+            }
         }
 
         private async Task<Series?> ScanSeriesDirectoryAsync(string directoryPath)
@@ -320,25 +359,11 @@ namespace MangaAssistant.Infrastructure.Services
                         { "SeriesName", seriesName }
                     });
                 
-                // Find cover images
-                var coverImages = FindCoverImages(directoryPath);
-                Logger.Log($"Found {coverImages.Length} cover images", LogLevel.Info, "LibraryScanner", directoryPath);
-
-                // Determine series title
-                string seriesTitle = await DetermineSeriesTitleAsync(directoryPath, cbzFiles, existingMetadata, seriesName);
-                Logger.Log($"Determined series title: {seriesTitle}", LogLevel.Info, "LibraryScanner", directoryPath,
-                    new Dictionary<string, string>
-                    {
-                        { "FinalTitle", seriesTitle },
-                        { "OriginalName", seriesName },
-                        { "TitleSource", DetermineTitleSource(existingMetadata, seriesTitle, seriesName) }
-                    });
-
-                // Create series object
+                // Create series object first
                 var series = new Series
                 {
                     Id = Guid.NewGuid(),
-                    Title = seriesTitle,
+                    Title = seriesName, // Will be updated later if better title is found
                     FolderPath = directoryPath,
                     Created = existingMetadata?.Created ?? directoryInfo.CreationTime,
                     LastModified = directoryInfo.LastWriteTime,
@@ -346,44 +371,29 @@ namespace MangaAssistant.Infrastructure.Services
                     ChapterCount = cbzFiles.Length
                 };
 
-                // Handle cover image
-                if (coverImages.Length > 0)
+                // Handle cover image using the new method
+                var coverPath = GetSeriesCoverPath(directoryPath);
+                if (!string.IsNullOrEmpty(coverPath))
                 {
-                    var selectedIndex = existingMetadata?.SelectedCoverIndex ?? 0;
-                    series.CoverPath = selectedIndex >= 0 && selectedIndex < coverImages.Length 
-                        ? coverImages[selectedIndex] 
-                        : coverImages[0];
-                    Logger.Log($"Selected cover image", LogLevel.Info, "LibraryScanner", directoryPath,
-                        new Dictionary<string, string>
-                        {
-                            { "CoverPath", series.CoverPath },
-                            { "SelectedIndex", selectedIndex.ToString() },
-                            { "TotalCovers", coverImages.Length.ToString() }
-                        });
-                }
-                else
-                {
-                    Logger.Log($"No cover images found, using placeholder", LogLevel.Info, "LibraryScanner", directoryPath);
-                    var placeholderPath = Path.Combine(directoryPath, DEFAULT_PLACEHOLDER);
-                    if (!File.Exists(placeholderPath))
+                    series.CoverPath = coverPath;
+                    if (existingMetadata != null)
                     {
-                        try
-                        {
-                            var sourcePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", DEFAULT_PLACEHOLDER);
-                            File.Copy(sourcePath, placeholderPath);
-                            series.CoverPath = placeholderPath;
-                            Logger.Log($"Created placeholder cover", LogLevel.Info, "LibraryScanner", directoryPath);
-                        }
-                        catch (Exception ex)
-                        {
-                            Logger.Log($"Failed to create placeholder: {ex.Message}", LogLevel.Error, "LibraryScanner", directoryPath);
-                        }
-                    }
-                    else
-                    {
-                        series.CoverPath = placeholderPath;
+                        existingMetadata.CoverPath = coverPath;
+                        existingMetadata.LastModified = DateTime.Now;
+                        await SaveSeriesMetadataAsync(series);
                     }
                 }
+
+                // Determine series title
+                string seriesTitle = await DetermineSeriesTitleAsync(directoryPath, cbzFiles, existingMetadata, seriesName);
+                series.Title = seriesTitle;
+                Logger.Log($"Determined series title: {seriesTitle}", LogLevel.Info, "LibraryScanner", directoryPath,
+                    new Dictionary<string, string>
+                    {
+                        { "FinalTitle", seriesTitle },
+                        { "OriginalName", seriesName },
+                        { "TitleSource", DetermineTitleSource(existingMetadata, seriesTitle, seriesName) }
+                    });
 
                 if (!cbzFiles.Any())
                 {
@@ -396,12 +406,7 @@ namespace MangaAssistant.Infrastructure.Services
             }
             catch (Exception ex)
             {
-                Logger.Log($"Error scanning directory: {ex.Message}", LogLevel.Error, "LibraryScanner", directoryPath,
-                    new Dictionary<string, string>
-                    {
-                        { "ErrorType", ex.GetType().Name },
-                        { "StackTrace", ex.StackTrace ?? "No stack trace" }
-                    });
+                Logger.Log($"Error scanning directory: {ex.Message}", LogLevel.Error, "LibraryScanner");
                 return null;
             }
         }
@@ -505,7 +510,7 @@ namespace MangaAssistant.Infrastructure.Services
         }
 
         // Method to insert cover image into a CBZ file
-        private async Task<bool> InsertCoverIntoChapterAsync(string cbzFilePath, string coverImagePath)
+        public async Task<bool> InsertCoverIntoChapterAsync(string cbzFilePath, string coverImagePath)
         {
             try
             {
@@ -935,36 +940,77 @@ namespace MangaAssistant.Infrastructure.Services
         {
             var metadataPath = Path.Combine(directoryPath, SERIES_METADATA_FILE);
             if (!File.Exists(metadataPath))
+            {
+                Logger.Log($"No metadata file found at {metadataPath}", LogLevel.Info, "LibraryScanner");
                 return null;
+            }
 
             try
             {
                 var json = await File.ReadAllTextAsync(metadataPath);
-                return JsonSerializer.Deserialize<SeriesMetadata>(json, _jsonOptions);
+                var metadata = JsonSerializer.Deserialize<SeriesMetadata>(json, _jsonOptions);
+                
+                // Ensure cover properties are in sync
+                if (metadata != null)
+                {
+                    if (!string.IsNullOrEmpty(metadata.CoverUrl) && string.IsNullOrEmpty(metadata.CoverPath))
+                    {
+                        metadata.CoverPath = metadata.CoverUrl;
+                    }
+                    else if (!string.IsNullOrEmpty(metadata.CoverPath) && string.IsNullOrEmpty(metadata.CoverUrl))
+                    {
+                        metadata.CoverUrl = metadata.CoverPath;
+                    }
+                }
+                
+                return metadata;
             }
             catch (Exception ex)
             {
-                Logger.Log($"Error loading metadata: {ex.Message}", LogLevel.Error);
+                Logger.Log($"Error loading metadata: {ex.Message}", LogLevel.Error, "LibraryScanner");
                 return null;
             }
         }
 
         public async Task UpdateSeriesCover(string seriesPath, string coverPath)
         {
+            try
+            {
+                Logger.Log($"Updating series cover at {seriesPath} with new cover: {coverPath}", LogLevel.Info, "LibraryScanner");
+                
             var metadata = await LoadSeriesMetadataAsync(seriesPath);
             if (metadata == null)
-                return;
+                {
+                    metadata = new SeriesMetadata();
+                }
 
             var coverImages = FindCoverImages(seriesPath);
             var selectedIndex = Array.IndexOf(coverImages, coverPath);
+                
             if (selectedIndex >= 0)
             {
                 metadata.CoverPath = coverPath;
+                    metadata.CoverUrl = coverPath; // Sync both cover properties
                 metadata.SelectedCoverIndex = selectedIndex;
+                    metadata.LastModified = DateTime.Now; // Update modification time to trigger refresh
                 
                 var metadataPath = Path.Combine(seriesPath, SERIES_METADATA_FILE);
                 var json = JsonSerializer.Serialize(metadata, _jsonOptions);
                 await File.WriteAllTextAsync(metadataPath, json);
+                    
+                    Logger.Log($"Successfully updated cover metadata at {metadataPath}", LogLevel.Info, "LibraryScanner");
+                    
+                    // Raise the ScanProgress event to notify UI of the change
+                    OnScanProgress(100, metadata.Series, 1, 1);
+                }
+                else
+                {
+                    Logger.Log($"Cover path not found in available covers: {coverPath}", LogLevel.Warning, "LibraryScanner");
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Log($"Error updating series cover: {ex.Message}", LogLevel.Error, "LibraryScanner");
             }
         }
 
@@ -1165,9 +1211,9 @@ namespace MangaAssistant.Infrastructure.Services
                     Logger.Log($"Successfully extracted basic info using fallback method from {Path.GetFileName(cbzPath)}", 
                         LogLevel.Info, "LibraryScanner");
                     return info;
-                }
+            }
 
-                return null;
+            return null;
             }
             catch (Exception ex)
             {
@@ -1247,6 +1293,33 @@ namespace MangaAssistant.Infrastructure.Services
         protected virtual void OnScanProgressChanged(ScanProgressChangedEventArgs e)
         {
             ScanProgressChanged?.Invoke(this, e);
+        }
+
+        public void InvalidateCoverCache(string seriesPath)
+        {
+            _coverCache.TryRemove(seriesPath, out _);
+        }
+
+        public void ClearCoverCache()
+        {
+            _coverCache.Clear();
+        }
+
+        private string[] FindCoverImages(string directoryPath)
+        {
+            var coverFiles = new List<string>();
+            
+            // Look for cover files in the series directory
+            foreach (var pattern in COVER_PATTERNS)
+            {
+                var coverPath = Path.Combine(directoryPath, pattern);
+                if (File.Exists(coverPath))
+                {
+                    coverFiles.Add(coverPath);
+                }
+            }
+
+            return coverFiles.ToArray();
         }
     }
 } 

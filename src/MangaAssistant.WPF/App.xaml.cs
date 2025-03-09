@@ -37,7 +37,7 @@ public partial class App : System.Windows.Application
         var settingsService = new SettingsService();
         var libraryScanner = new LibraryScanner(settingsService);
         var libraryService = new LibraryService(settingsService, libraryScanner);
-        var metadataService = new MetadataService(libraryService);
+        var metadataService = new MetadataService(libraryService, settingsService);
 
         // Register services with the ViewModelLocator
         ViewModelLocator.RegisterServices(libraryService, settingsService, metadataService);

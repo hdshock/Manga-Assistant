@@ -24,6 +24,7 @@ namespace MangaAssistant.Infrastructure.Services.Metadata
         private readonly SemaphoreSlim _rateLimiter;
         private readonly JsonSerializerOptions _jsonOptions;
         private readonly MangaDexScraper _scraper;
+        private readonly ISettingsService _settingsService;
         private const string BaseUrl = "https://api.mangadex.org";
         private const string MangaUrl = "https://mangadex.org/title";
         private const string CoverUrl = "https://uploads.mangadex.org/covers";
@@ -33,7 +34,7 @@ namespace MangaAssistant.Infrastructure.Services.Metadata
 
         public string Name => "MangaDex";
 
-        public MangaDexMetadataProvider()
+        public MangaDexMetadataProvider(ISettingsService settingsService)
         {
             _httpClient = new HttpClient();
             _httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
@@ -49,6 +50,7 @@ namespace MangaAssistant.Infrastructure.Services.Metadata
             };
             
             _scraper = new MangaDexScraper();
+            _settingsService = settingsService;
         }
 
         public async Task<IEnumerable<SeriesSearchResult>> SearchAsync(string query)
@@ -161,9 +163,25 @@ namespace MangaAssistant.Infrastructure.Services.Metadata
                     }
 
                     var manga = mangaResponse.Data;
+                    var coverUrl = GetCoverUrl(manga);
+                    
+                    // Get the series directory path from the settings service
+                    var libraryPath = _settingsService.LibraryPath;
+                    var seriesTitle = GetBestTitle(manga.Attributes.Title);
+                    var seriesPath = Path.Combine(libraryPath, seriesTitle);
+                    
+                    // Create directory if it doesn't exist
+                    if (!Directory.Exists(seriesPath))
+                    {
+                        Directory.CreateDirectory(seriesPath);
+                    }
+                    
+                    // Download and handle cover
+                    var localCoverPath = await HandleCoverDownloadAsync(seriesPath, coverUrl);
+                    
                     var metadata = new SeriesMetadata
                     {
-                        Series = GetBestTitle(manga.Attributes.Title),
+                        Series = seriesTitle,
                         Description = GetBestDescription(manga.Attributes.Description),
                         Year = manga.Attributes.Year ?? 0,
                         Status = ConvertStatus(manga.Attributes.Status),
@@ -178,14 +196,19 @@ namespace MangaAssistant.Infrastructure.Services.Metadata
                         ProviderId = providerId,
                         ProviderName = Name,
                         ProviderUrl = $"{MangaUrl}/{providerId}",
-                        CoverUrl = GetCoverUrl(manga)
+                        CoverUrl = coverUrl,
+                        CoverPath = !string.IsNullOrEmpty(localCoverPath) ? localCoverPath : coverUrl,
+                        LastModified = DateTime.Now
                     };
 
                     await EnrichWithChapterMetadata(metadata, providerId);
+                    
+                    Logger.Log($"Updated cover for manga {metadata.Series}: {coverUrl}", LogLevel.Info, "MangaDex");
+            
                     return metadata;
                 });
 
-                return metadata;
+                return metadata ?? CreateDefaultMetadata(providerId);
             }
             catch (Exception ex)
             {
@@ -274,14 +297,6 @@ namespace MangaAssistant.Infrastructure.Services.Metadata
                 {
                     var response = await _httpClient.GetAsync(url);
                     await HandleRateLimitsAsync(response);
-
-                    if (!response.IsSuccessStatusCode)
-                    {
-                        var requestId = response.Headers.GetValues("X-Request-ID").FirstOrDefault();
-                        Logger.Log($"Failed to fetch cover image (Request ID: {requestId}): {response.StatusCode}", LogLevel.Warning, "MangaDex");
-                        return response;
-                    }
-
                     return response;
                 });
 
@@ -290,6 +305,7 @@ namespace MangaAssistant.Infrastructure.Services.Metadata
                     return await response.Content.ReadAsByteArrayAsync();
                 }
 
+                Logger.Log($"Failed to fetch cover image: {response.StatusCode}", LogLevel.Warning, "MangaDex");
                 return null;
             }
             catch (Exception ex)
@@ -306,7 +322,7 @@ namespace MangaAssistant.Infrastructure.Services.Metadata
                    titles.GetValueOrDefault("ja-ro") ?? 
                    titles.GetValueOrDefault("ja") ?? 
                    titles.Values.FirstOrDefault() ?? 
-                   string.Empty;
+                   "Unknown Title";
         }
 
         private string GetBestDescription(Dictionary<string, string> descriptions)
@@ -356,7 +372,9 @@ namespace MangaAssistant.Infrastructure.Services.Metadata
                 ProviderUrl = $"{MangaUrl}/{providerId}",
                 Series = "Unknown Series",
                 Status = "Unknown",
-                CoverUrl = string.Empty
+                CoverUrl = string.Empty,
+                CoverPath = string.Empty,
+                LastModified = DateTime.Now
             };
         }
 
@@ -422,6 +440,62 @@ namespace MangaAssistant.Infrastructure.Services.Metadata
                 return string.Empty;
 
             return $"{CoverUrl}/{manga.Id}/{fileName}";
+        }
+
+        private async Task<string> HandleCoverDownloadAsync(string seriesPath, string coverUrl)
+        {
+            try
+            {
+                Logger.Log($"Downloading cover from {coverUrl}", LogLevel.Info, "MangaDex");
+                
+                // Create the target path
+                var coverPath = Path.Combine(seriesPath, "cover.jpg");
+                
+                // Download and save the cover
+                var coverData = await GetCoverImageAsync(coverUrl);
+                if (coverData != null)
+                {
+                    // Clean up existing cover files
+                    foreach (var file in Directory.GetFiles(seriesPath, "cover.*"))
+                    {
+                        if (file != coverPath)
+                        {
+                            try
+                            {
+                                File.Delete(file);
+                                Logger.Log($"Deleted old cover file: {file}", LogLevel.Info, "MangaDex");
+                            }
+                            catch (Exception ex)
+                            {
+                                Logger.Log($"Error deleting old cover file {file}: {ex.Message}", LogLevel.Error, "MangaDex");
+                            }
+                        }
+                    }
+                    
+                    // Save the new cover
+                    await File.WriteAllBytesAsync(coverPath, coverData);
+                    Logger.Log($"Saved cover to {coverPath}", LogLevel.Info, "MangaDex");
+                    
+                    // Update first chapter if it exists
+                    var cbzFiles = Directory.GetFiles(seriesPath, "*.cbz");
+                    if (cbzFiles.Length > 0)
+                    {
+                        var firstChapter = cbzFiles.OrderBy(f => f).First();
+                        var scanner = new LibraryScanner(null); // We'll need to inject this
+                        await scanner.InsertCoverIntoChapterAsync(firstChapter, coverPath);
+                    }
+                    
+                    return coverPath;
+                }
+                
+                Logger.Log("Failed to download cover image", LogLevel.Warning, "MangaDex");
+                return string.Empty;
+            }
+            catch (Exception ex)
+            {
+                Logger.Log($"Error handling cover download: {ex.Message}", LogLevel.Error, "MangaDex");
+                return string.Empty;
+            }
         }
 
         public void Dispose()
